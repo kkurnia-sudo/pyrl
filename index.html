@@ -14,6 +14,12 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Flatpickr untuk format dd/mm/yyyy -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://npmcdn.com/flatpickr/dist/l10n/id.js"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
         
@@ -144,34 +150,76 @@
             
             <!-- 1. DASHBOARD -->
             <div id="menu-dashboard" class="menu-view block">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                    <div onclick="bukaMenu('menu-pengaturan'); bukaTabPengaturan('tab-karyawan')" class="modern-card bg-gradient-to-br from-blue-500 to-blue-600 text-white cursor-pointer hover:-translate-y-2 hover:shadow-2xl transition-all duration-300 border-none">
+                <!-- Kumpulan Cards Atas -->
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8" id="dash-cards-container">
+                    <!-- Card: Total Karyawan -->
+                    <div id="card-tot-karyawan" onclick="bukaMenu('menu-pengaturan'); bukaTabPengaturan('tab-karyawan')" class="modern-card bg-gradient-to-br from-blue-500 to-blue-600 text-white cursor-pointer hover:-translate-y-2 hover:shadow-xl transition-all duration-300 border-none">
                         <div class="text-blue-100 text-sm font-medium">Total Karyawan Aktif</div>
-                        <div class="text-4xl font-bold mt-2 flex items-center justify-between">
+                        <div class="text-3xl font-bold mt-2 flex items-center justify-between">
                             <span id="dash-tot-karyawan">0</span>
-                            <span class="text-blue-200 opacity-50 text-4xl">👥</span>
+                            <svg class="w-10 h-10 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                         </div>
                     </div>
-                    <div onclick="bukaMenu('menu-rekap-produksi')" class="modern-card bg-gradient-to-br from-indigo-500 to-purple-600 text-white cursor-pointer hover:-translate-y-2 hover:shadow-2xl transition-all duration-300 border-none">
-                        <div class="text-indigo-100 text-sm font-medium">Total Produksi Hari Ini</div>
-                        <div class="text-4xl font-bold mt-2 flex items-center justify-between">
+                    <!-- Card: Total Produksi -->
+                    <div id="card-tot-produksi" onclick="bukaMenu('menu-rekap-produksi')" class="modern-card bg-gradient-to-br from-indigo-500 to-purple-600 text-white cursor-pointer hover:-translate-y-2 hover:shadow-xl transition-all duration-300 border-none">
+                        <div id="dash-tot-produksi-title" class="text-indigo-100 text-sm font-medium">Produksi Hari Ini</div>
+                        <div class="text-3xl font-bold mt-2 flex items-center justify-between">
                             <span id="dash-tot-produksi">0 Pcs</span>
-                            <span class="text-indigo-200 opacity-50 text-4xl">📦</span>
+                            <svg class="w-10 h-10 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                        </div>
+                    </div>
+                    <!-- Card: Saldo Kas -->
+                    <div id="card-saldo-kas" onclick="bukaMenu('menu-tabungan'); bukaTabBukuSaldo('tab-saldo-kas')" class="modern-card bg-gradient-to-br from-emerald-500 to-teal-600 text-white cursor-pointer hover:-translate-y-2 hover:shadow-xl transition-all duration-300 border-none">
+                        <div class="text-emerald-100 text-sm font-medium">Saldo Kas Perusahaan</div>
+                        <div class="text-3xl font-bold mt-2 flex items-center justify-between">
+                            <span id="dash-saldo-kas" class="text-2xl">Rp 0</span>
+                            <svg class="w-10 h-10 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                    </div>
+                    <!-- Card: Saldo Listrik -->
+                    <div id="card-saldo-listrik" onclick="bukaMenu('menu-tabungan'); bukaTabBukuSaldo('tab-saldo-listrik')" class="modern-card bg-gradient-to-br from-orange-400 to-red-500 text-white cursor-pointer hover:-translate-y-2 hover:shadow-xl transition-all duration-300 border-none">
+                        <div class="text-orange-100 text-sm font-medium">Saldo Listrik & Air</div>
+                        <div class="text-3xl font-bold mt-2 flex items-center justify-between">
+                            <span id="dash-saldo-listrik" class="text-2xl">Rp 0</span>
+                            <svg class="w-10 h-10 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
                         </div>
                     </div>
                 </div>
                 
-                <div class="modern-card">
-                    <div class="flex flex-wrap items-center justify-between mb-6 gap-4">
-                        <h3 class="font-bold text-gray-800">Grafik Produksi per Divisi</h3>
-                        <div class="flex items-center gap-2 bg-gray-50 p-2 rounded-xl border border-gray-100 dark:border-gray-700">
-                            <input type="date" id="chart-mulai" class="modern-input !py-1.5 !text-xs !bg-white !w-32" onchange="renderDashboard()">
-                            <span class="text-gray-400 font-bold text-xs">s/d</span>
-                            <input type="date" id="chart-akhir" class="modern-input !py-1.5 !text-xs !bg-white !w-32" onchange="renderDashboard()">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Chart Area -->
+                    <div class="lg:col-span-2 modern-card" id="dash-chart-container">
+                        <div class="flex flex-wrap items-center justify-between mb-6 gap-4">
+                            <h3 class="font-bold text-gray-800">Grafik Produksi per Divisi</h3>
+                            <div class="flex items-center gap-2 bg-gray-50 p-2 rounded-xl border border-gray-100 dark:border-gray-700">
+                                <input type="date" id="chart-mulai" class="modern-input !py-1.5 !text-xs !w-32" onchange="renderDashboard()">
+                                <span class="text-gray-400 font-bold text-xs">s/d</span>
+                                <input type="date" id="chart-akhir" class="modern-input !py-1.5 !text-xs !w-32" onchange="renderDashboard()">
+                            </div>
+                        </div>
+                        <div class="relative w-full h-[300px]">
+                            <canvas id="chartProduksi"></canvas>
                         </div>
                     </div>
-                    <div class="relative w-full h-[300px]">
-                        <canvas id="chartProduksi"></canvas>
+
+                    <!-- Top Karyawan -->
+                    <div class="modern-card flex flex-col" id="dash-top-container">
+                        <div class="mb-4 pb-4 border-b border-gray-100 dark:border-gray-700">
+                            <h3 class="font-bold text-gray-800 mb-3">Top Produksi</h3>
+                            <div class="flex flex-col gap-2">
+                                <div class="flex items-center gap-2 bg-gray-50 p-1.5 rounded-lg border border-gray-100 dark:border-gray-700 dark:bg-gray-800/50">
+                                    <input type="date" id="top-mulai" class="modern-input !py-1 !px-1.5 !text-[11px] !w-full" onchange="renderTopProduksi()">
+                                    <span class="text-gray-400 font-bold text-[10px]">s/d</span>
+                                    <input type="date" id="top-akhir" class="modern-input !py-1 !px-1.5 !text-[11px] !w-full" onchange="renderTopProduksi()">
+                                </div>
+                                <select id="top-divisi" class="modern-input !py-1.5 !px-2 !text-[11px] bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700" onchange="renderTopProduksi()">
+                                    <!-- Diisi JS -->
+                                </select>
+                            </div>
+                        </div>
+                        <div class="space-y-3 flex-1 overflow-y-auto pr-1" id="dash-top-list">
+                            <!-- Diisi via JS -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -207,8 +255,8 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="mt-6 flex justify-between items-center bg-blue-50/50 dark:bg-blue-900/20 p-4 rounded-2xl">
-                        <div class="font-bold text-gray-600">Grand Total: <span id="foot-grand-tot" class="text-xl text-blue-600 ml-2">0</span> Pcs</div>
+                    <div class="mt-6 flex justify-between items-center bg-blue-50/50 dark:bg-blue-900/20 p-4 rounded-2xl border border-blue-100 dark:border-blue-800">
+                        <div class="font-bold text-gray-600 dark:text-gray-300">Grand Total: <span id="foot-grand-tot" class="text-2xl text-blue-600 dark:text-blue-400 ml-2">0</span> <span class="text-sm font-medium text-gray-500">Pcs</span></div>
                         <button onclick="simpanDataHarian()" id="btn-simpan-harian" class="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:-translate-y-1 transition">Simpan Produksi</button>
                     </div>
                 </div>
@@ -233,11 +281,30 @@
                         </div>
                     </div>
 
-                    <div class="max-h-[58vh] overflow-auto" id="tabel-container-rekap" style="padding-bottom: 20px;">
+                    <div class="max-h-[58vh] overflow-auto" id="tabel-container-rekap">
                         <table class="modern-table" id="tabel-rekap-horizontal">
                             <thead><tr id="head-rekap-tgl"></tr></thead>
                             <tbody id="tbody-rekap-horizontal"><tr><td class="py-10 text-center text-gray-400">Pilih divisi terlebih dahulu.</td></tr></tbody>
+                            <!-- Elemen TFOOT disembunyikan di UI, dimunculkan saat export -->
+                            <tfoot id="tfoot-rekap-horizontal" class="hidden"></tfoot>
                         </table>
+                    </div>
+
+                    <!-- SUMMARY REKAP BAR (Pengganti Cards) -->
+                    <div id="rekap-summary-bar" class="hidden justify-between items-center bg-blue-50/50 dark:bg-blue-900/20 p-4 rounded-2xl mt-4 mb-4 border border-blue-100 dark:border-blue-800 transition-all">
+                        <div class="flex flex-wrap items-center gap-4 md:gap-8">
+                            <div class="font-bold text-gray-600 dark:text-gray-300">
+                                Total Reguler: <span id="summary-tot-reg" class="text-xl text-blue-600 dark:text-blue-400 ml-2">0</span>
+                            </div>
+                            <div class="hidden md:block w-px h-6 bg-blue-200 dark:bg-blue-800"></div>
+                            <div class="font-bold text-gray-600 dark:text-gray-300">
+                                Total Lembur: <span id="summary-tot-lem" class="text-xl text-orange-500 dark:text-orange-400 ml-2">0</span>
+                            </div>
+                            <div class="hidden md:block w-px h-6 bg-blue-200 dark:bg-blue-800"></div>
+                            <div class="font-bold text-gray-600 dark:text-gray-300">
+                                Grand Total: <span id="summary-grand-tot" class="text-2xl text-green-600 dark:text-green-400 ml-2">0</span> <span class="text-sm font-medium text-gray-500">Pcs</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -346,7 +413,7 @@
                                 <h3 class="font-bold text-xl text-gray-800">Buku Kas Perusahaan</h3>
                                 <div class="flex gap-4 items-center">
                                     <button onclick="mintaPIN(() => bukaModalTransaksi('kas'))" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-md hover:bg-blue-700">+ Catat Transaksi</button>
-                                    <div class="bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 px-6 py-2 rounded-xl font-bold text-lg">Saldo: <span id="tot-kas-perusahaan">Rp 0</span></div>
+                                    <div class="bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300 px-6 py-2 rounded-xl font-bold text-lg">Saldo: <span id="tot-kas-perusahaan-tab">Rp 0</span></div>
                                 </div>
                             </div>
                         </div>
@@ -372,7 +439,7 @@
                                 <h3 class="font-bold text-xl text-gray-800">Buku Listrik & Air Perusahaan</h3>
                                 <div class="flex gap-4 items-center">
                                     <button onclick="mintaPIN(() => bukaModalTransaksi('listrik'))" class="bg-orange-600 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-md hover:bg-orange-700">+ Catat Transaksi</button>
-                                    <div class="bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300 px-6 py-2 rounded-xl font-bold text-lg">Saldo: <span id="tot-listrik-perusahaan">Rp 0</span></div>
+                                    <div class="bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300 px-6 py-2 rounded-xl font-bold text-lg">Saldo: <span id="tot-listrik-perusahaan-tab">Rp 0</span></div>
                                 </div>
                             </div>
                         </div>
@@ -455,6 +522,7 @@
                         <button onclick="bukaTabPengaturan('tab-karyawan')" id="btn-tab-karyawan" class="flex-1 min-w-[130px] py-3 px-4 rounded-xl font-bold text-sm bg-white shadow-sm text-blue-600 transition-all">Master Karyawan</button>
                         <button onclick="bukaTabPengaturan('tab-divisi')" id="btn-tab-divisi" class="flex-1 min-w-[130px] py-3 px-4 rounded-xl font-bold text-sm text-gray-500 hover:bg-white/50 transition-all">Manajemen Divisi</button>
                         <button onclick="bukaTabPengaturan('tab-potongan')" id="btn-tab-potongan" class="flex-1 min-w-[130px] py-3 px-4 rounded-xl font-bold text-sm text-gray-500 hover:bg-white/50 transition-all">⚙️ Setelan Umum</button>
+                        <button onclick="bukaTabPengaturan('tab-dashboard')" id="btn-tab-dashboard" class="flex-1 min-w-[130px] py-3 px-4 rounded-xl font-bold text-sm text-gray-500 hover:bg-white/50 transition-all">🎛️ Tampilan Dashboard</button>
                         <button onclick="bukaTabPengaturan('tab-printer')" id="btn-tab-printer" class="flex-1 min-w-[130px] py-3 px-4 rounded-xl font-bold text-sm text-gray-500 hover:bg-white/50 transition-all">🖨️ Setting Printer</button>
                     </div>
 
@@ -514,6 +582,61 @@
                             
                             <button onclick="simpanPengaturan()" class="w-full bg-blue-600 text-white px-4 py-3 rounded-xl mt-4 font-bold shadow-lg shadow-blue-600/30">Simpan Perubahan</button>
                         </div>
+                    </div>
+
+                    <!-- TAB PENGATURAN DASHBOARD -->
+                    <div id="tab-dashboard" class="p-8 tab-content hidden max-w-3xl">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <!-- Visibilitas Widget -->
+                            <div class="space-y-4">
+                                <h3 class="font-bold text-lg text-gray-800 mb-4 border-b pb-2 dark:border-gray-700">Tampilan Widget / Kartu</h3>
+                                <label class="flex items-center gap-3 cursor-pointer">
+                                    <input type="checkbox" id="set-dash-karyawan" class="chk-potongan w-5 h-5">
+                                    <span class="font-medium text-gray-700 dark:text-gray-300">Tampilkan Total Karyawan Aktif</span>
+                                </label>
+                                
+                                <div>
+                                    <label class="flex items-center gap-3 cursor-pointer">
+                                        <input type="checkbox" id="set-dash-produksi" class="chk-potongan w-5 h-5">
+                                        <span class="font-medium text-gray-700 dark:text-gray-300">Tampilkan Widget Total Produksi</span>
+                                    </label>
+                                    <!-- OPSI SPAN WAKTU & DIVISI UNTUK WIDGET PRODUKSI -->
+                                    <div class="ml-8 mt-2 flex flex-col sm:flex-row gap-2">
+                                        <select id="set-dash-produksi-span" class="modern-input !py-1.5 !px-3 text-xs w-full sm:w-48 font-semibold text-gray-600 dark:text-gray-300">
+                                            <option value="today">Produksi Hari Ini</option>
+                                            <option value="yesterday">Produksi Hari Kemarin</option>
+                                            <option value="last3days">Produksi 3 Hari Terakhir</option>
+                                            <option value="last1week">Produksi 1 Minggu Terakhir</option>
+                                        </select>
+                                        <select id="set-dash-produksi-divisi" class="modern-input !py-1.5 !px-3 text-xs w-full sm:w-48 font-semibold text-gray-600 dark:text-gray-300">
+                                            <!-- Diisi JS -->
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <label class="flex items-center gap-3 cursor-pointer">
+                                    <input type="checkbox" id="set-dash-kas" class="chk-potongan w-5 h-5">
+                                    <span class="font-medium text-gray-700 dark:text-gray-300">Tampilkan Saldo Kas Perusahaan</span>
+                                </label>
+                                <label class="flex items-center gap-3 cursor-pointer">
+                                    <input type="checkbox" id="set-dash-listrik" class="chk-potongan w-5 h-5">
+                                    <span class="font-medium text-gray-700 dark:text-gray-300">Tampilkan Saldo Listrik & Air</span>
+                                </label>
+                                <label class="flex items-center gap-3 cursor-pointer">
+                                    <input type="checkbox" id="set-dash-top" class="chk-potongan w-5 h-5">
+                                    <span class="font-medium text-gray-700 dark:text-gray-300">Tampilkan Papan Peringkat (Top Karyawan)</span>
+                                </label>
+                            </div>
+                            <!-- Pengaturan Grafik Divisi -->
+                            <div>
+                                <h3 class="font-bold text-lg text-gray-800 mb-4 border-b pb-2 dark:border-gray-700">Filter Divisi di Grafik</h3>
+                                <p class="text-xs text-gray-500 mb-3 font-medium">Pilih divisi mana saja yang ingin ditampilkan pada grafik produksi dashboard.</p>
+                                <div id="set-dash-divisi-container" class="space-y-2 max-h-[300px] overflow-y-auto pr-2">
+                                    <!-- Diisi JS -->
+                                </div>
+                            </div>
+                        </div>
+                        <button onclick="simpanPengaturanDashboard()" class="w-full md:w-1/2 bg-blue-600 text-white px-4 py-3 rounded-xl mt-8 font-bold shadow-lg shadow-blue-600/30">Simpan Tampilan Dashboard</button>
                     </div>
 
                     <!-- TAB SETTING PRINTER -->
@@ -924,6 +1047,7 @@
         
         const _supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+        // State Pengaturan Umum
         let dbSettings = { 
             tarifKas: 5000, 
             tarifListrik: 2000,
@@ -936,6 +1060,19 @@
             printFontSize: "14px",
             printFontWeight: "normal"
         };
+        
+        // State Tampilan Dashboard (Disimpan di LocalStorage)
+        let dbDashConf = {
+            showKaryawan: true,
+            showProduksi: true,
+            showKas: true,
+            showListrik: true,
+            showTop: true,
+            chartDivisi: [],
+            produksiSpan: 'today',
+            produksiDivisi: '' // Menyimpan setting opsi divisi untuk widget Total Produksi
+        };
+
         let dbDivisi = [];
         let dbKaryawan = [];
         let dbProduksi = [];
@@ -947,7 +1084,6 @@
         let arsipAktifTerpilih = null; 
         let chartProduksiInst = null; 
         
-        // VARIABEL PIN
         let pinKeamanan = "123456";
         let pendingAction = null;
 
@@ -960,9 +1096,7 @@
         function getTglHariIni() { return new Date().toISOString().split('T')[0]; }
         function getTglWaktu() { let d=new Date(); return `${("0"+d.getDate()).slice(-2)}/${("0"+(d.getMonth()+1)).slice(-2)}/${d.getFullYear()} ${("0"+d.getHours()).slice(-2)}:${("0"+d.getMinutes()).slice(-2)}`; }
 
-        // FUNGSI PENDORONG MARGIN KANAN (UNTUK KERTAS 58MM DI PRINTER 80MM)
         function tambahkanMarginKanan(teks, w) {
-            // Hanya aktif jika user memilih ukuran 58mm (w = 32)
             if (w === 32) {
                 let spasi = " ".repeat(14); 
                 let lines = teks.split('\n');
@@ -1002,38 +1136,45 @@
             if(e.key === 'Enter') verifikasiPIN();
         }
 
+        function loadLocalSettings() {
+            try {
+                const pSett = localStorage.getItem('sbr_printer_settings');
+                if (pSett) {
+                    const parsed = JSON.parse(pSett);
+                    dbSettings.printerHeader = parsed.printerHeader || dbSettings.printerHeader;
+                    dbSettings.printerFooter = parsed.printerFooter || dbSettings.printerFooter;
+                    dbSettings.printerSize = parsed.printerSize || dbSettings.printerSize;
+                    dbSettings.printerDivider = parsed.printerDivider !== undefined ? parsed.printerDivider : dbSettings.printerDivider;
+                    dbSettings.printerAutoCut = parsed.printerAutoCut || false;
+                    dbSettings.printFontFamily = parsed.printFontFamily || dbSettings.printFontFamily;
+                    dbSettings.printFontSize = parsed.printFontSize || dbSettings.printFontSize;
+                    dbSettings.printFontWeight = parsed.printFontWeight || dbSettings.printFontWeight;
+                }
+                
+                const dSett = localStorage.getItem('sbr_dashboard_settings');
+                if (dSett) {
+                    const parsed = JSON.parse(dSett);
+                    dbDashConf.showKaryawan = parsed.showKaryawan !== undefined ? parsed.showKaryawan : true;
+                    dbDashConf.showProduksi = parsed.showProduksi !== undefined ? parsed.showProduksi : true;
+                    dbDashConf.showKas = parsed.showKas !== undefined ? parsed.showKas : true;
+                    dbDashConf.showListrik = parsed.showListrik !== undefined ? parsed.showListrik : true;
+                    dbDashConf.showTop = parsed.showTop !== undefined ? parsed.showTop : true;
+                    dbDashConf.chartDivisi = parsed.chartDivisi || [];
+                    dbDashConf.produksiSpan = parsed.produksiSpan || 'today';
+                    dbDashConf.produksiDivisi = parsed.produksiDivisi || '';
+                }
+            } catch(e) { console.error("Gagal load setting lokal", e); }
+        }
+
         async function fetchAllData() {
             try {
+                loadLocalSettings();
+                
                 let { data: setRes } = await _supabase.from('settings').select('*').single();
                 if(setRes) { 
-                    dbSettings = { 
-                        tarifKas: setRes.tarif_kas, 
-                        tarifListrik: setRes.tarif_listrik,
-                        printerHeader: setRes.printer_header || "SBR SYSTEMS PAYROLL",
-                        printerFooter: setRes.printer_footer || "* Terima Kasih *",
-                        printerSize: setRes.printer_size || "80",
-                        printerDivider: setRes.printer_divider !== false,
-                        printerAutoCut: false,
-                        printFontFamily: setRes.print_font_family || "monospace",
-                        printFontSize: setRes.print_font_size || "14px",
-                        printFontWeight: setRes.print_font_weight || "normal"
-                    }; 
+                    dbSettings.tarifKas = setRes.tarif_kas;
+                    dbSettings.tarifListrik = setRes.tarif_listrik;
                     if (setRes.pin_otorisasi !== undefined) pinKeamanan = setRes.pin_otorisasi || "123456";
-                }
-
-                const localPrinterSettings = localStorage.getItem('sbr_printer_settings');
-                if (localPrinterSettings) {
-                    try {
-                        const parsed = JSON.parse(localPrinterSettings);
-                        dbSettings.printerHeader = parsed.printerHeader || dbSettings.printerHeader;
-                        dbSettings.printerFooter = parsed.printerFooter || dbSettings.printerFooter;
-                        dbSettings.printerSize = parsed.printerSize || dbSettings.printerSize;
-                        dbSettings.printerDivider = parsed.printerDivider !== undefined ? parsed.printerDivider : dbSettings.printerDivider;
-                        dbSettings.printerAutoCut = parsed.printerAutoCut || false;
-                        dbSettings.printFontFamily = parsed.printFontFamily || dbSettings.printFontFamily;
-                        dbSettings.printFontSize = parsed.printFontSize || dbSettings.printFontSize;
-                        dbSettings.printFontWeight = parsed.printFontWeight || dbSettings.printFontWeight;
-                    } catch(e) { console.error("Gagal load setting printer lokal", e); }
                 }
 
                 let { data: divRes } = await _supabase.from('divisi').select('*');
@@ -1108,6 +1249,20 @@
 
                 let { data: setRes } = await _supabase.from('settings').select('pin_otorisasi').single();
                 if(setRes && setRes.pin_otorisasi !== undefined) pinKeamanan = setRes.pin_otorisasi || "123456";
+                
+                let { data: trxRes } = await _supabase.from('transaksi_perusahaan').select('*');
+                if(trxRes) {
+                    dbPerusahaan.kas = []; dbPerusahaan.listrik = [];
+                    trxRes.forEach(t => {
+                        let item = { tgl: t.tgl, desc: t.keterangan, masuk: t.masuk, keluar: t.keluar };
+                        if(t.jenis === 'kas') dbPerusahaan.kas.push(item);
+                        if(t.jenis === 'listrik') dbPerusahaan.listrik.push(item);
+                    });
+                    renderLedgerPerusahaan();
+                }
+                
+                if(document.getElementById('menu-dashboard').classList.contains('block')) renderDashboard();
+
             } catch (e) { console.error(e); }
         }
 
@@ -1124,7 +1279,10 @@
             if(document.getElementById('menu-dashboard').classList.contains('block')) renderDashboard();
             renderLedgerPerusahaan();
             if(document.getElementById('menu-input-harian').classList.contains('block') && document.getElementById('tgl-harian').value !== '') renderTabelHarian();
-            if(document.getElementById('menu-pengaturan').classList.contains('block') && document.getElementById('tab-karyawan').classList.contains('block')) renderTableKaryawan();
+            if(document.getElementById('menu-pengaturan').classList.contains('block')) {
+                if (document.getElementById('tab-karyawan').classList.contains('block')) renderTableKaryawan();
+                if (document.getElementById('tab-dashboard').classList.contains('block')) renderPengaturanDashboard();
+            }
             if(document.getElementById('menu-arsip').classList.contains('block')) renderArsipPembayaran();
             
             renderTableDivisi();
@@ -1185,7 +1343,6 @@
             });
             
             let formattedTextStr = processedLines.join('\n');
-			// PERBAIKAN DI SINI: Menambahkan perintah \x1B\x33\x18 untuk merapatkan jarak spasi atas
 			const initCmd = '\x1B\x40';
             let closeCmd = '\x1B\x45\x00\x0A'; 
             
@@ -1210,11 +1367,35 @@
             }
         }
 
+        function initFlatpickr() {
+            flatpickr('input[type="date"]', {
+                locale: "id",            
+                dateFormat: "Y-m-d",     
+                altInput: true,          
+                altFormat: "d/m/Y",      
+                disableMobile: "true",   
+                onChange: function(selectedDates, dateStr, instance) {
+                    instance.element.dispatchEvent(new Event('change'));
+                }
+            });
+        }
+
         function initApp() {
             document.getElementById('cg-mulai').value = ""; document.getElementById('cg-akhir').value = "";
             document.getElementById('tgl-harian').value = getTglHariIni();
+            
             let semingguLalu = new Date(); semingguLalu.setDate(semingguLalu.getDate() - 6);
-            document.getElementById('rp-mulai').value = semingguLalu.toISOString().split('T')[0]; document.getElementById('rp-akhir').value = getTglHariIni();
+            let tglMulaiStr = semingguLalu.toISOString().split('T')[0];
+            let tglAkhirStr = getTglHariIni();
+
+            document.getElementById('rp-mulai').value = tglMulaiStr; 
+            document.getElementById('rp-akhir').value = tglAkhirStr;
+            
+            // Set default date untuk Top Produksi
+            document.getElementById('top-mulai').value = tglMulaiStr;
+            document.getElementById('top-akhir').value = tglAkhirStr;
+            
+            initFlatpickr();
             fetchAllData();
             initRealtimeSubscription();
         }
@@ -1260,25 +1441,146 @@
             document.getElementById(id).classList.replace('flex','hidden'); 
         }
 
+        function renderTopProduksi() {
+            if(!dbDashConf.showTop) return;
+            
+            let tMulai = document.getElementById('top-mulai').value;
+            let tAkhir = document.getElementById('top-akhir').value;
+            let divFilter = document.getElementById('top-divisi').value;
+            
+            if(!tMulai || !tAkhir) return; // Menunggu value ada
+            
+            let prodFiltered = dbProduksi.filter(p => p.tgl >= tMulai && p.tgl <= tAkhir);
+            let listTop = [];
+            
+            prodFiltered.forEach(p => {
+                let kTarget = dbKaryawan.find(k => k.id === p.id_kar);
+                if(kTarget) {
+                    if(divFilter !== "" && kTarget.div_id != divFilter) return; 
+                    
+                    let totalP = p.reg + p.lem + p.lem2 + p.lem3;
+                    let exist = listTop.find(l => l.id === kTarget.id);
+                    if(exist) exist.total += totalP;
+                    else listTop.push({id: kTarget.id, nama: kTarget.nama, total: totalP, divName: dbDivisi.find(d=>d.id==kTarget.div_id)?.nama || '-'});
+                }
+            });
+            
+            listTop.sort((a,b) => b.total - a.total);
+            let top5 = listTop.slice(0, 5);
+            
+            const boxTop = document.getElementById('dash-top-list');
+            if(top5.length === 0) {
+                boxTop.innerHTML = `<div class="py-4 text-center text-sm text-gray-400">Belum ada produksi pada periode ini.</div>`;
+            } else {
+                boxTop.innerHTML = top5.map((k, i) => `
+                    <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-800/50 p-3 rounded-xl border border-gray-100 dark:border-gray-700 hover:border-blue-200 transition">
+                        <div class="flex items-center gap-3">
+                            <div class="w-6 h-6 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-black dark:bg-blue-900/50 dark:text-blue-300">#${i+1}</div>
+                            <div>
+                                <div class="text-sm font-bold text-gray-800">${k.nama}</div>
+                                <div class="text-[10px] text-gray-500 uppercase tracking-wide">${k.divName}</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-sm font-black text-indigo-600 dark:text-indigo-400">${formatRibuanStr(k.total)}</div>
+                            <div class="text-[9px] font-bold text-gray-400 uppercase">Pcs</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
         function renderDashboard() {
+            // Toggle visibility dari Settings
+            document.getElementById('card-tot-karyawan').classList.toggle('hidden', !dbDashConf.showKaryawan);
+            document.getElementById('card-tot-produksi').classList.toggle('hidden', !dbDashConf.showProduksi);
+            document.getElementById('card-saldo-kas').classList.toggle('hidden', !dbDashConf.showKas);
+            document.getElementById('card-saldo-listrik').classList.toggle('hidden', !dbDashConf.showListrik);
+            document.getElementById('dash-top-container').classList.toggle('hidden', !dbDashConf.showTop);
+            
+            // Adjust grid if top is hidden
+            if(!dbDashConf.showTop) {
+                document.getElementById('dash-chart-container').classList.replace('lg:col-span-2', 'lg:col-span-3');
+            } else {
+                document.getElementById('dash-chart-container').classList.replace('lg:col-span-3', 'lg:col-span-2');
+            }
+
+            // Tembak Data: Karyawan
             document.getElementById('dash-tot-karyawan').innerText = dbKaryawan.length;
-            let today = getTglHariIni();
-            let totProdToday = dbProduksi.filter(p => p.tgl === today).reduce((sum, p) => sum + p.reg + p.lem + p.lem2 + p.lem3, 0);
+            
+            let todayObj = new Date();
+            let today = todayObj.toISOString().split('T')[0];
+            
+            // Kalkulasi Produksi Berdasarkan Rentang Waktu (Settings)
+            let titleProduksi = "Produksi Hari Ini";
+            let prodSpanData = [];
+            
+            if (dbDashConf.produksiSpan === 'yesterday') {
+                let yObj = new Date(); yObj.setDate(yObj.getDate() - 1);
+                let yStr = yObj.toISOString().split('T')[0];
+                prodSpanData = dbProduksi.filter(p => p.tgl === yStr);
+                titleProduksi = "Produksi Hari Kemarin";
+            } else if (dbDashConf.produksiSpan === 'last3days') {
+                let d3Obj = new Date(); d3Obj.setDate(d3Obj.getDate() - 2); 
+                let d3Str = d3Obj.toISOString().split('T')[0];
+                prodSpanData = dbProduksi.filter(p => p.tgl >= d3Str && p.tgl <= today);
+                titleProduksi = "Produksi 3 Hari Terakhir";
+            } else if (dbDashConf.produksiSpan === 'last1week') {
+                let d7Obj = new Date(); d7Obj.setDate(d7Obj.getDate() - 6);
+                let d7Str = d7Obj.toISOString().split('T')[0];
+                prodSpanData = dbProduksi.filter(p => p.tgl >= d7Str && p.tgl <= today);
+                titleProduksi = "Produksi 1 Minggu Terakhir";
+            } else { 
+                prodSpanData = dbProduksi.filter(p => p.tgl === today);
+                titleProduksi = "Produksi Hari Ini";
+            }
+            
+            // Terapkan Filter Divisi jika dipilih di pengaturan
+            if (dbDashConf.produksiDivisi && dbDashConf.produksiDivisi !== '') {
+                let divName = dbDivisi.find(d => d.id == dbDashConf.produksiDivisi)?.nama || '';
+                if (divName) titleProduksi += ` (${divName})`; // Update judul sesuai divisi
+                
+                let kIds = dbKaryawan.filter(k => k.div_id == dbDashConf.produksiDivisi).map(k => k.id);
+                prodSpanData = prodSpanData.filter(p => kIds.includes(p.id_kar));
+            }
+
+            // Tembak Data: Total Produksi
+            document.getElementById('dash-tot-produksi-title').innerText = titleProduksi;
+            let totProdToday = prodSpanData.reduce((sum, p) => sum + p.reg + p.lem + p.lem2 + p.lem3, 0);
             if(document.getElementById('dash-tot-produksi')) {
                 document.getElementById('dash-tot-produksi').innerText = formatRibuanStr(totProdToday) + " Pcs";
             }
+            
+            // Tembak Data: Saldo
+            let sKas = dbPerusahaan.kas.reduce((sum, x) => sum + (x.masuk - x.keluar), 0);
+            let sLis = dbPerusahaan.listrik.reduce((sum, x) => sum + (x.masuk - x.keluar), 0);
+            document.getElementById('dash-saldo-kas').innerText = `Rp ${formatRibuanStr(sKas)}`;
+            document.getElementById('dash-saldo-listrik').innerText = `Rp ${formatRibuanStr(sLis)}`;
 
+            // Tembak Data: Top Karyawan (Fungsi Terpisah)
+            if(dbDashConf.showTop) {
+                renderTopProduksi();
+            }
+
+            // Grafik Setup
             let elMulai = document.getElementById('chart-mulai');
             let elAkhir = document.getElementById('chart-akhir');
             if(!elMulai.value || !elAkhir.value) {
                 let semingguLalu = new Date(); semingguLalu.setDate(semingguLalu.getDate() - 6); 
-                elMulai.value = semingguLalu.toISOString().split('T')[0];
-                elAkhir.value = today;
+                elMulai._flatpickr.setDate(semingguLalu.toISOString().split('T')[0], false);
+                elAkhir._flatpickr.setDate(today, false);
             }
 
             let startTgl = elMulai.value; let endTgl = elAkhir.value;
             let divLabels = []; let divData = [];
-            dbDivisi.forEach(d => {
+            
+            // Filter divisi yang akan digambar di grafik
+            let chartDivsToProcess = dbDivisi;
+            if(dbDashConf.chartDivisi.length > 0) {
+                chartDivsToProcess = dbDivisi.filter(d => dbDashConf.chartDivisi.includes(d.id.toString()));
+            }
+
+            chartDivsToProcess.forEach(d => {
                 divLabels.push(d.nama);
                 let kIds = dbKaryawan.filter(k => k.div_id == d.id).map(k => k.id);
                 let sumProd = dbProduksi.filter(p => p.tgl >= startTgl && p.tgl <= endTgl && kIds.includes(p.id_kar)).reduce((sum, p) => sum + p.reg + p.lem + p.lem2 + p.lem3, 0);
@@ -1295,6 +1597,53 @@
                 });
             }
         }
+
+        // KUMPULAN FUNGSI SETTING DASHBOARD ------------------------------------
+        function renderPengaturanDashboard() {
+            document.getElementById('set-dash-karyawan').checked = dbDashConf.showKaryawan;
+            document.getElementById('set-dash-produksi').checked = dbDashConf.showProduksi;
+            document.getElementById('set-dash-kas').checked = dbDashConf.showKas;
+            document.getElementById('set-dash-listrik').checked = dbDashConf.showListrik;
+            document.getElementById('set-dash-top').checked = dbDashConf.showTop;
+            document.getElementById('set-dash-produksi-span').value = dbDashConf.produksiSpan || 'today';
+            document.getElementById('set-dash-produksi-divisi').value = dbDashConf.produksiDivisi || '';
+
+            const container = document.getElementById('set-dash-divisi-container');
+            if(dbDivisi.length === 0) {
+                container.innerHTML = `<p class="text-sm text-gray-500 italic">Belum ada divisi terdaftar.</p>`;
+            } else {
+                container.innerHTML = dbDivisi.map(d => {
+                    let isChecked = dbDashConf.chartDivisi.length === 0 || dbDashConf.chartDivisi.includes(d.id.toString());
+                    return `
+                    <label class="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:border-blue-300 transition shadow-sm">
+                        <input type="checkbox" value="${d.id}" class="chk-dash-divisi w-5 h-5 accent-blue-600" ${isChecked ? 'checked' : ''}>
+                        <span class="font-medium text-sm text-gray-700 dark:text-gray-300">${d.nama}</span>
+                    </label>
+                    `;
+                }).join('');
+            }
+        }
+
+        function simpanPengaturanDashboard() {
+            dbDashConf.showKaryawan = document.getElementById('set-dash-karyawan').checked;
+            dbDashConf.showProduksi = document.getElementById('set-dash-produksi').checked;
+            dbDashConf.showKas = document.getElementById('set-dash-kas').checked;
+            dbDashConf.showListrik = document.getElementById('set-dash-listrik').checked;
+            dbDashConf.showTop = document.getElementById('set-dash-top').checked;
+            dbDashConf.produksiSpan = document.getElementById('set-dash-produksi-span').value;
+            dbDashConf.produksiDivisi = document.getElementById('set-dash-produksi-divisi').value; // Simpan filter divisi
+
+            let selectedDivs = [];
+            document.querySelectorAll('.chk-dash-divisi').forEach(chk => {
+                if(chk.checked) selectedDivs.push(chk.value);
+            });
+            dbDashConf.chartDivisi = selectedDivs;
+
+            localStorage.setItem('sbr_dashboard_settings', JSON.stringify(dbDashConf));
+            alert('Pengaturan tampilan dashboard berhasil disimpan!');
+            renderDashboard(); // refresh chart & widget total produksi
+        }
+        // ----------------------------------------------------------------------
 
         function renderTabelHarian() {
             const divId = document.getElementById('select-divisi-harian').value;
@@ -1431,7 +1780,10 @@
                     }
                 }
                 alert(`Berhasil menyimpan data produksi!`);
-                document.getElementById('tgl-harian').value = '';
+                
+                // Clear input
+                document.getElementById('tgl-harian')._flatpickr.clear();
+                
                 fetchAllData(); 
             } catch (err) {
                 console.error("Gagal menyimpan produksi harian: ", err);
@@ -1453,11 +1805,18 @@
         function renderRekapProduksiHorizontal() {
             const mulai = document.getElementById('rp-mulai').value; const akhir = document.getElementById('rp-akhir').value; const div = document.getElementById('rp-divisi').value;
             const tbody = document.getElementById('tbody-rekap-horizontal');
+            const tfoot = document.getElementById('tfoot-rekap-horizontal');
+            const summaryBar = document.getElementById('rekap-summary-bar');
+            
             if(!div) {
-                document.getElementById('head-rekap-tgl').innerHTML = '';
+                document.getElementById('head-rekap-tgl').innerHTML = ''; tfoot.innerHTML = '';
+                summaryBar.classList.add('hidden'); summaryBar.classList.remove('flex');
                 return tbody.innerHTML = `<tr><td class="py-10 text-center text-gray-400">Silakan pilih divisi terlebih dahulu untuk melihat rekap produksi.</td></tr>`;
             }
-            if(!mulai || !akhir || mulai > akhir) return tbody.innerHTML = `<tr><td class="py-10 text-center text-gray-400">Rentang tanggal tidak valid.</td></tr>`;
+            if(!mulai || !akhir || mulai > akhir) {
+                tfoot.innerHTML = ''; summaryBar.classList.add('hidden'); summaryBar.classList.remove('flex');
+                return tbody.innerHTML = `<tr><td class="py-10 text-center text-gray-400">Rentang tanggal tidak valid.</td></tr>`;
+            }
 
             const arrDates = getDatesBetween(mulai, akhir);
             let headHTML = `<th class="px-4 py-3 text-left bg-gray-100 dark:bg-gray-900 sticky left-0 top-0 z-30 border-r border-gray-200">Nama</th><th class="px-4 py-3 text-left bg-gray-100 dark:bg-gray-900 sticky left-[120px] top-0 z-30 border-r border-gray-200 w-32">Divisi</th>`;
@@ -1467,13 +1826,18 @@
 
             let filterKaryawan = dbKaryawan; if(div !== "") filterKaryawan = filterKaryawan.filter(k => k.div_id == div);
             let bodyHTML = "";
+            let superTotReg = 0, superTotLem = 0, superGrand = 0;
+
             if(filterKaryawan.length === 0) {
+                tfoot.innerHTML = '';
+                summaryBar.classList.add('hidden'); summaryBar.classList.remove('flex');
                 bodyHTML = `<tr><td colspan="${4 + arrDates.length}" class="py-10 text-center text-gray-400">Tidak ada data.</td></tr>`;
             } else {
                 filterKaryawan.forEach(k => {
                     let divName = dbDivisi.find(d => d.id == k.div_id)?.nama || '-';
                     let tr = `<tr><td class="font-bold text-gray-800 bg-white dark:bg-gray-800 sticky left-0 z-10 border-r border-gray-200 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]">${k.nama}</td><td class="text-gray-500 bg-white dark:bg-gray-800 sticky left-[120px] z-10 border-r border-gray-200 text-xs truncate max-w-[120px]">${divName}</td>`;
                     let totReg = 0, totLem = 0, hariKerja = 0;
+                    
                     arrDates.forEach(d => {
                         let p = dbProduksi.find(p => p.id_kar === k.id && p.tgl === d);
                         let r = p ? p.reg : 0; let l1 = p ? p.lem : 0; let l2 = p ? p.lem2 : 0; let l3 = p ? p.lem3 : 0;
@@ -1483,10 +1847,37 @@
                         let cellTxt = p ? `<span class="${r>0?'text-blue-600 dark:text-blue-400':'text-gray-300 dark:text-gray-600'}">${r}</span> <span class="text-gray-300 dark:text-gray-600">|</span> <span class="${sumL>0?'text-orange-500 dark:text-orange-400':'text-gray-300 dark:text-gray-600'}">${sumL}</span>` : `<span class="text-gray-200 dark:text-gray-700">-</span>`;
                         tr += `<td class="text-center font-semibold text-sm border-r border-gray-50 hover:bg-blue-50 dark:hover:bg-blue-900/30 cursor-pointer" onclick="bukaModalEditProduksi(${k.id}, '${d}', '${k.nama}', ${r}, ${l1}, ${l2}, ${l3})">${cellTxt}</td>`;
                     });
+                    
                     let grand = totReg + totLem; let rata2 = hariKerja > 0 ? (grand / hariKerja).toFixed(1) : 0;
                     tr += `<td class="text-center font-bold text-blue-600 dark:text-blue-400 bg-blue-50/30 dark:bg-blue-900/20">${totReg}</td><td class="text-center font-bold text-orange-500 dark:text-orange-400 bg-orange-50/30 dark:bg-orange-900/20">${totLem}</td><td class="text-center font-bold text-green-600 dark:text-green-400 bg-green-50/50 dark:bg-green-900/30 text-lg">${grand}</td><td class="text-center font-medium text-gray-500 bg-gray-50 dark:bg-gray-800">${rata2}</td></tr>`;
                     bodyHTML += tr;
+
+                    superTotReg += totReg;
+                    superTotLem += totLem;
+                    superGrand += grand;
                 });
+
+                // ROW FOOTER (Disembunyikan di UI, muncul saat Export)
+                let footHTML = `
+                <tr class="font-bold border-t-2 border-gray-300 dark:border-gray-600 uppercase tracking-wider bg-gray-100 dark:bg-gray-800">
+                    <td class="bg-gray-200 dark:bg-gray-700 text-right px-4 py-4 text-gray-800 dark:text-gray-100 border-r border-gray-300 dark:border-gray-600">TOTAL</td>
+                    <td class="bg-gray-200 dark:bg-gray-700 text-center px-4 py-4 text-gray-800 dark:text-gray-100 border-r border-gray-300 dark:border-gray-600">KESELURUHAN</td>
+                `;
+                arrDates.forEach(() => { footHTML += `<td class="bg-gray-100 dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700"></td>`; });
+                footHTML += `
+                    <td class="text-center font-black text-blue-800 dark:text-blue-300 bg-blue-200 dark:bg-blue-900/80 py-4 text-base">${superTotReg}</td>
+                    <td class="text-center font-black text-orange-700 dark:text-orange-300 bg-orange-200 dark:bg-orange-900/80 py-4 text-base">${superTotLem}</td>
+                    <td class="text-center font-black text-green-800 dark:text-green-300 bg-green-300 dark:bg-green-800 py-4 text-xl">${superGrand}</td>
+                    <td class="bg-gray-100 dark:bg-gray-800"></td>
+                </tr>`;
+                
+                tfoot.innerHTML = footHTML;
+                
+                // Tampilkan Summary Bar di UI
+                summaryBar.classList.remove('hidden'); summaryBar.classList.add('flex');
+                document.getElementById('summary-tot-reg').innerText = formatRibuanStr(superTotReg);
+                document.getElementById('summary-tot-lem').innerText = formatRibuanStr(superTotLem);
+                document.getElementById('summary-grand-tot').innerText = formatRibuanStr(superGrand);
             }
             tbody.innerHTML = bodyHTML;
         }
@@ -1597,6 +1988,8 @@
                 csv.push(headers.join(","));
                 
                 let filterKaryawan = dbKaryawan.filter(k => k.div_id == div);
+                let expSuperReg = 0, expSuperLem = 0, expSuperGrand = 0; // Totals for export
+                
                 filterKaryawan.forEach(k => {
                     let divName = dbDivisi.find(d => d.id == k.div_id)?.nama || '-';
                     let row = [`"${k.nama}"`, `"${divName}"`];
@@ -1612,7 +2005,17 @@
                     let grand = totReg + totLem; let rata2 = hariKerja > 0 ? (grand / hariKerja).toFixed(1) : 0;
                     row.push(totReg, totLem, grand, rata2);
                     csv.push(row.join(","));
+                    
+                    expSuperReg += totReg;
+                    expSuperLem += totLem;
+                    expSuperGrand += grand;
                 });
+                
+                // Tambahkan row Grand Total di Excel
+                let footRow = ["TOTAL KESELURUHAN", ""];
+                arrDates.forEach(d => { footRow.push("", ""); }); // Kosongkan kolom hari
+                footRow.push(expSuperReg, expSuperLem, expSuperGrand, "");
+                csv.push(footRow.join(","));
                 
                 let csvFile = new Blob([csv.join("\n")], {type: "text/csv"}); 
                 let link = document.createElement("a"); 
@@ -1643,16 +2046,27 @@
             sourceTable.style.color = "#000000";
             sourceTable.style.border = "1px solid #000";
 
+            // Hapus header kolom Divisi
             const headerTr = sourceTable.querySelector('thead tr');
             if (headerTr && headerTr.cells.length > 1) {
                 headerTr.deleteCell(1);
             }
+            
+            // Hapus isi kolom Divisi di setiap karyawan
             const rows = sourceTable.querySelectorAll('tbody tr');
             rows.forEach(row => {
-                if (row.cells.length > 1) {
-                    row.deleteCell(1);
-                }
+                if (row.cells.length > 1) row.deleteCell(1);
             });
+
+            // Tampilkan Tfoot (total keseluruhan) yang tadi disembunyikan
+            const tfoot = sourceTable.querySelector('tfoot');
+            if (tfoot) {
+                tfoot.classList.remove('hidden'); // Munculkan sebelum di-screenshot!
+                const footerRow = tfoot.querySelector('tr');
+                if (footerRow && footerRow.cells.length > 1) {
+                    footerRow.deleteCell(1); // Sesuaikan kolomnya agar rapi
+                }
+            }
 
             const ths = sourceTable.querySelectorAll('th');
             ths.forEach(th => { 
@@ -1669,7 +2083,14 @@
                 td.style.border = "1px solid #000"; 
                 td.style.padding = "6px"; 
                 td.style.color = "#000"; 
-                td.style.backgroundColor = "#ffffff"; 
+                
+                // Tambahkan background warna tebal untuk area tfoot/total
+                if (td.innerHTML === "TOTAL" || td.parentElement.parentElement.tagName === "TFOOT") {
+                    td.style.backgroundColor = "#e2e8f0";
+                    td.style.fontWeight = "bold";
+                } else {
+                    td.style.backgroundColor = "#ffffff"; 
+                }
             });
 
             exportContainer.innerHTML = `
@@ -2155,8 +2576,8 @@
         }
 
         function renderLedgerPerusahaan() {
-            let sKas=0; document.getElementById('tbody-kas-perusahaan').innerHTML = dbPerusahaan.kas.map(x=>{ sKas+=(x.masuk-x.keluar); return `<tr><td>${formatTanggal(x.tgl)}</td><td class="font-medium">${x.desc}</td><td class="text-right text-green-600">${x.masuk>0?formatRibuanStr(x.masuk):'-'}</td><td class="text-right text-red-500">${x.keluar>0?formatRibuanStr(x.keluar):'-'}</td></tr>`;}).join(''); document.getElementById('tot-kas-perusahaan').innerText = `Rp ${formatRibuanStr(sKas)}`;
-            let sLis=0; document.getElementById('tbody-listrik-perusahaan').innerHTML = dbPerusahaan.listrik.map(x=>{ sLis+=(x.masuk-x.keluar); return `<tr><td>${formatTanggal(x.tgl)}</td><td class="font-medium">${x.desc}</td><td class="text-right text-green-600">${x.masuk>0?formatRibuanStr(x.masuk):'-'}</td><td class="text-right text-red-500">${x.keluar>0?formatRibuanStr(x.keluar):'-'}</td></tr>`;}).join(''); document.getElementById('tot-listrik-perusahaan').innerText = `Rp ${formatRibuanStr(sLis)}`;
+            let sKas=0; document.getElementById('tbody-kas-perusahaan').innerHTML = dbPerusahaan.kas.map(x=>{ sKas+=(x.masuk-x.keluar); return `<tr><td>${formatTanggal(x.tgl)}</td><td class="font-medium">${x.desc}</td><td class="text-right text-green-600">${x.masuk>0?formatRibuanStr(x.masuk):'-'}</td><td class="text-right text-red-500">${x.keluar>0?formatRibuanStr(x.keluar):'-'}</td></tr>`;}).join(''); document.getElementById('tot-kas-perusahaan-tab').innerText = `Rp ${formatRibuanStr(sKas)}`;
+            let sLis=0; document.getElementById('tbody-listrik-perusahaan').innerHTML = dbPerusahaan.listrik.map(x=>{ sLis+=(x.masuk-x.keluar); return `<tr><td>${formatTanggal(x.tgl)}</td><td class="font-medium">${x.desc}</td><td class="text-right text-green-600">${x.masuk>0?formatRibuanStr(x.masuk):'-'}</td><td class="text-right text-red-500">${x.keluar>0?formatRibuanStr(x.keluar):'-'}</td></tr>`;}).join(''); document.getElementById('tot-listrik-perusahaan-tab').innerText = `Rp ${formatRibuanStr(sLis)}`;
         }
 
         function bukaModalTransaksi(jenis) {
@@ -2186,7 +2607,7 @@
             let saldoNow = dbPerusahaan[jenis].reduce((sum, item) => sum + (item.masuk - item.keluar), 0) + (tipe === 'masuk' ? nominal : -nominal);
 
             if(isCetakBT || isCetakUSB) {
-                let titleStr = jenis === 'kas' ? 'TRANSAKSI KAS' : 'TRANSAKSI LISTRIK & AIR';
+                let titleStr = jenis === 'kas' ? 'TRANSAKSI KAS' : 'TRANSAKSI LISTRIK & Air';
                 let st = center("SBR SYSTEMS", w) + "\n" + center(titleStr, w) + "\n" + "-".repeat(w) + "\n" + `Tgl : ${getTglWaktu()}\nKet : ${ket}\n` + "-".repeat(w) + "\n" + alignLR(tipe==='masuk'?'UANG MASUK':'UANG KELUAR', formatRibuanStr(nominal), w) + "\n" + "-".repeat(w) + "\n" + alignLR("SALDO TERKINI", formatRibuanStr(saldoNow), w) + "\n" + "-".repeat(w) + "\n" + center("Terima Kasih", w) + "\n\n";
                 
                 st = tambahkanMarginKanan(st, w);
@@ -2269,10 +2690,18 @@
         }
 
         function renderSelectDivisi() {
-            const savedFilterDivisi = document.getElementById('filter-divisi')?.value || ""; const savedRpDivisi = document.getElementById('rp-divisi')?.value || ""; const savedCgDivisi = document.getElementById('cg-divisi')?.value || ""; const savedTabDivisi = document.getElementById('filter-tab-divisi')?.value || ""; const savedRiwDivisi = document.getElementById('filter-arsip-divisi')?.value || ""; const savedHarianDivisi = document.getElementById('select-divisi-harian')?.value || "";
+            const savedFilterDivisi = document.getElementById('filter-divisi')?.value || ""; 
+            const savedRpDivisi = document.getElementById('rp-divisi')?.value || ""; 
+            const savedCgDivisi = document.getElementById('cg-divisi')?.value || ""; 
+            const savedTabDivisi = document.getElementById('filter-tab-divisi')?.value || ""; 
+            const savedRiwDivisi = document.getElementById('filter-arsip-divisi')?.value || ""; 
+            const savedHarianDivisi = document.getElementById('select-divisi-harian')?.value || ""; 
+            const savedTopDivisi = document.getElementById('top-divisi')?.value || "";
+            const savedDashProdDivisi = document.getElementById('set-dash-produksi-divisi')?.value || ""; // Filter untuk Widget Dashboard
+
             const opts = `<option value="">-- Semua Divisi --</option>` + dbDivisi.map(d => `<option value="${d.id}">${d.nama}</option>`).join('');
             
-            ['select-divisi-harian', 'rp-divisi', 'cg-divisi', 'filter-divisi', 'filter-tab-divisi', 'filter-arsip-divisi'].forEach(id => { if(document.getElementById(id)) document.getElementById(id).innerHTML = opts; });
+            ['select-divisi-harian', 'rp-divisi', 'cg-divisi', 'filter-divisi', 'filter-tab-divisi', 'filter-arsip-divisi', 'top-divisi', 'set-dash-produksi-divisi'].forEach(id => { if(document.getElementById(id)) document.getElementById(id).innerHTML = opts; });
 
             if(document.getElementById('select-divisi-harian')) document.getElementById('select-divisi-harian').value = savedHarianDivisi;
             if(document.getElementById('rp-divisi')) document.getElementById('rp-divisi').value = savedRpDivisi;
@@ -2280,19 +2709,28 @@
             if(document.getElementById('filter-divisi')) document.getElementById('filter-divisi').value = savedFilterDivisi;
             if(document.getElementById('filter-tab-divisi')) document.getElementById('filter-tab-divisi').value = savedTabDivisi;
             if(document.getElementById('filter-arsip-divisi')) document.getElementById('filter-arsip-divisi').value = savedRiwDivisi;
+            if(document.getElementById('top-divisi')) document.getElementById('top-divisi').value = savedTopDivisi;
+            if(document.getElementById('set-dash-produksi-divisi')) document.getElementById('set-dash-produksi-divisi').value = savedDashProdDivisi;
 
             const optsAdd = dbDivisi.map(d => `<option value="${d.id}">${d.nama}</option>`).join('');
             if(document.getElementById('form-kar-divisi')) document.getElementById('form-kar-divisi').innerHTML = optsAdd;
         }
 
         function bukaTabPengaturan(id) { 
-            document.querySelectorAll('.tab-content').forEach(el=>el.classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); 
+            document.querySelectorAll('.tab-content').forEach(el=>el.classList.add('hidden')); 
+            document.getElementById(id).classList.remove('hidden'); 
+            
             const aktifCls = "flex-1 min-w-[130px] py-3 px-4 rounded-xl font-bold text-sm bg-white shadow-sm text-blue-600 transition-all";
             const pasifCls = "flex-1 min-w-[130px] py-3 px-4 rounded-xl font-bold text-sm text-gray-500 hover:bg-white/50 transition-all";
+            
             document.getElementById('btn-tab-potongan').className = id==='tab-potongan'?aktifCls:pasifCls;
             document.getElementById('btn-tab-divisi').className = id==='tab-divisi'?aktifCls:pasifCls;
             document.getElementById('btn-tab-karyawan').className = id==='tab-karyawan'?aktifCls:pasifCls;
             document.getElementById('btn-tab-printer').className = id==='tab-printer'?aktifCls:pasifCls;
+            document.getElementById('btn-tab-dashboard').className = id==='tab-dashboard'?aktifCls:pasifCls;
+
+            if (id === 'tab-dashboard') renderPengaturanDashboard();
+            if (id === 'tab-karyawan') renderTableKaryawan();
         }
 
         async function simpanPengaturan() { 
