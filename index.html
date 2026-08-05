@@ -1305,6 +1305,9 @@
                 
                 document.getElementById('preview-ukuran').value = dbSettings.printerSize;
                 document.getElementById('arsip-ukuran').value = dbSettings.printerSize;
+                
+                if(document.getElementById('trans-ukuran-print')) document.getElementById('trans-ukuran-print').value = dbSettings.printerSize;
+                if(document.getElementById('ct-ukuran-print')) document.getElementById('ct-ukuran-print').value = dbSettings.printerSize;
             }
         }
 
@@ -2586,7 +2589,7 @@
             
             document.getElementById('trans-cetak-bt').checked = false;
             document.getElementById('trans-cetak-usb').checked = false;
-            document.getElementById('trans-ukuran-print').value = '80';
+            document.getElementById('trans-ukuran-print').value = dbSettings.printerSize || '80';
 
             document.getElementById('modal-transaksi').classList.replace('hidden', 'flex');
         }
@@ -2641,7 +2644,7 @@
             
             document.getElementById('ct-cetak-bt').checked = false;
             document.getElementById('ct-cetak-usb').checked = false;
-            document.getElementById('ct-ukuran-print').value = '80';
+            document.getElementById('ct-ukuran-print').value = dbSettings.printerSize || '80';
             
             document.getElementById('modal-catat-tabungan').classList.replace('hidden', 'flex');
         }
