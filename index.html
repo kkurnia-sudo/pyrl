@@ -53,7 +53,7 @@
         .modern-table tbody tr:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.04); }
         
         .glass-modal { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-radius: 2rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); border: 1px solid rgba(255,255,255,0.5); }
-        .note-input { display: none; margin-top: 5px; width: 100%; font-size: 0.75rem; padding: 4px 8px; border: 1px dashed #93c5fd; border-radius: 0.5rem; background: #eff6ff;}
+        .note-input { display: none; margin-top: 5px; width: 100%; font-size: 0.75rem; padding: 6px 8px; border: 1px dashed #93c5fd; border-radius: 0.5rem; background: #eff6ff;}
         .note-input.active { display: block; }
 
         #export-png-container { 
@@ -323,7 +323,7 @@
                                 <label class="block text-xs font-semibold text-gray-500 mb-2 uppercase">Pilih Divisi</label>
                                 <div class="flex gap-2">
                                     <select id="cg-divisi" class="modern-input bg-gray-100" onchange="tarikDataCetakGaji()"></select>
-                                    <button onclick="bukaMenu('menu-arsip')" class="bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400 px-4 rounded-xl font-bold shadow-sm hover:bg-indigo-200 transition flex items-center gap-1 whitespace-nowrap">
+                                    <button onclick="bukaMenu('menu-arsip')" class="bg-indigo-500 text-indigo-100 dark:bg-indigo-700/40 dark:text-white-600 px-4 rounded-xl font-bold shadow-sm hover:bg-red-500 transition flex items-center gap-1 whitespace-nowrap">
                                         <span class="text-lg">📋</span> Lihat Arsip
                                     </button>
                                 </div>
@@ -335,7 +335,8 @@
                         <table class="modern-table">
                             <thead class="sticky top-0 bg-white dark:bg-gray-800 z-20 shadow-sm">
                                 <tr>
-                                    <th class="text-left py-3 bg-white dark:bg-gray-800">Nama</th>
+                                    <th class="text-center py-3 bg-white dark:bg-gray-800 w-12 border-r border-gray-100 dark:border-gray-700"><input type="checkbox" id="chk-all-gaji" checked onchange="toggleAllGaji(this)" class="chk-potongan" title="Pilih Semua Karyawan"></th>
+                                    <th class="text-left py-3 bg-white dark:bg-gray-800 pl-3">Nama</th>
                                     <th class="text-right py-3 bg-white dark:bg-gray-800">Upah Kotor</th>
                                     <th class="text-center py-3 text-blue-500 bg-white dark:bg-gray-800">Bonus & Note 💬</th>
                                     <th class="text-right py-3 bg-white dark:bg-gray-800">Pot Rutin</th>
@@ -346,13 +347,13 @@
                                 </tr>
                             </thead>
                             <tbody id="tbody-cetak-gaji">
-                                <tr><td colspan="8" class="py-10 text-center text-gray-400">Pilih divisi untuk melihat kalkulasi gaji.</td></tr>
+                                <tr><td colspan="9" class="py-10 text-center text-gray-400">Pilih divisi untuk melihat kalkulasi gaji.</td></tr>
                             </tbody>
                         </table>
                     </div>
 
                     <div class="flex justify-between items-center bg-blue-50/50 dark:bg-blue-900/20 p-6 rounded-3xl border border-blue-100 dark:border-blue-800 flex-wrap gap-4">
-                        <p class="text-sm text-gray-600 font-medium">Karyawan yang tidak masuk/cuti otomatis disembunyikan. Isi kolom bonus, kasbon, dsb jika ada.</p>
+                        <p class="text-sm text-gray-600 font-medium">Hanya karyawan yang <b>tercentang</b> yang akan dicetak dan terpotong saldonya.</p>
                         
                         <div class="flex items-center gap-6">
                             <div class="text-right">
@@ -492,12 +493,12 @@
                         </div>
                         
                         <!-- Kanan: Preview Struk -->
-                        <div class="w-full md:w-1/2 flex flex-col bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-inner">
+                        <div class="w-full md:w-1/2 flex flex-col bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 overflow-hidden shadow-inner relative">
                             <div class="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-900/50 flex justify-between items-center gap-4 z-10 shadow-sm">
                                 <h4 class="font-bold text-gray-700 text-sm truncate" id="judul-detail-arsip">Pratinjau Struk</h4>
                                 
                                 <div id="arsip-print-controls" class="hidden flex items-center gap-2 shrink-0">
-                                    <select id="arsip-ukuran" onchange="if(arsipAktifTerpilih) pilihArsip(arsipAktifTerpilih)" class="modern-input !py-1.5 !px-2 text-xs font-bold w-20">
+                                    <select id="arsip-ukuran" onchange="if(arsipAktifTerpilih) updateArsipPreview(arsipAktifTerpilih)" class="modern-input !py-1.5 !px-2 text-xs font-bold w-20">
                                         <option value="58">58mm</option>
                                         <option value="80">80mm</option>
                                     </select>
@@ -506,9 +507,18 @@
                                 </div>
                             </div>
                             
+                            <!-- Container List Checkbox Filter Cetak Ulang Arsip -->
+                            <div id="arsip-karyawan-list" class="flex flex-wrap gap-2 p-3 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 max-h-32 overflow-y-auto">
+                                <!-- Diisi JS Checkbox Pilihan -->
+                            </div>
+
                             <!-- Container untuk kertas struk -->
                             <div class="flex-1 overflow-y-auto bg-gray-100 dark:bg-gray-900 p-4 shadow-inner" id="preview-arsip-content">
                                 <!-- Isi default kosong di-handle oleh JS -->
+                                <div class="h-full flex flex-col items-center justify-center text-gray-400 opacity-60">
+                                    <div class="text-6xl mb-4">🧾</div>
+                                    <p class="font-medium text-sm text-center">Pilih sesi arsip di sebelah kiri<br>untuk melihat pratinjau struk</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -851,9 +861,9 @@
             
             <div class="flex gap-2 shrink-0 flex-wrap">
                 <button onclick="tutupModal('modal-pratinjau')" class="flex-1 py-3 bg-gray-100 text-gray-500 font-bold hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl transition">Batal</button>
-                <button onclick="prosesCetakDanSimpan('usb')" class="w-full md:w-auto flex-[2] bg-teal-600 text-white rounded-xl font-bold shadow-lg hover:bg-teal-700 transition flex items-center justify-center gap-2">
-                    🖨️ Cetak USB & Simpan
-                </button>
+                <button onclick="prosesCetakDanSimpann('usb')" class="w-full md:w-auto flex-[2] bg-white text-white rounded-xl font-bold shadow-lg hover:bg-red-500 transition flex items-center justify-center gap-2">
+                    ⛔
+                </button>				
                 <button onclick="prosesCetakDanSimpan('bt')" class="w-full md:w-auto flex-[2] bg-blue-600 text-white rounded-xl font-bold shadow-lg hover:bg-blue-700 transition flex items-center justify-center gap-2">
                     🖨️ Cetak BT & Simpan
                 </button>
@@ -1406,6 +1416,7 @@
         function resetArsipPreview() {
             document.getElementById('judul-detail-arsip').innerText = "Pratinjau Struk";
             document.getElementById('arsip-print-controls').classList.replace('flex', 'hidden');
+            document.getElementById('arsip-karyawan-list').innerHTML = ''; // Kosongkan daftar checkbox
             document.getElementById('preview-arsip-content').innerHTML = `
                 <div class="h-full flex flex-col items-center justify-center text-gray-400 opacity-60">
                     <div class="text-6xl mb-4">🧾</div>
@@ -1442,6 +1453,50 @@
 
         function tutupModal(id) { 
             document.getElementById(id).classList.replace('flex','hidden'); 
+        }
+
+        // FUNGSI CHECKBOX CETAK GAJI & UPDATE CATATAN
+        function toggleAllGaji(el) {
+            const isChecked = el.checked;
+            document.querySelectorAll('.chk-gaji-row').forEach(cb => cb.checked = isChecked);
+            dataRekapAktif.forEach(r => r.selected = isChecked);
+            kalkulasiGrandTotalGaji();
+        }
+
+        function toggleRowGaji(id, el) {
+            let r = dataRekapAktif.find(x => x.id === id);
+            if(r) r.selected = el.checked;
+            kalkulasiGrandTotalGaji();
+            
+            const allChecked = dataRekapAktif.every(x => x.selected !== false);
+            document.getElementById('chk-all-gaji').checked = allChecked;
+        }
+
+        function updateGajiData(id, key, val) {
+            let r = dataRekapAktif.find(x => x.id === id);
+            if(r) r[key] = val;
+        }
+
+        function updateGajiNum(id, key, el) {
+            formatRibuan(el);
+            let val = unformatRibuan(el.value);
+            let r = dataRekapAktif.find(x => x.id === id);
+            if(r) r[key] = val;
+            let bersih = (r.upahKotor||0) + (r.nomLem4||0) + (r.bonus||0) - (r.potRutin||0) - (r.kasbon||0) - (r.tabungan||0) - (r.potLain||0);
+            document.getElementById(`cg-bersih-${id}`).innerText = formatRibuanStr(bersih);
+            kalkulasiGrandTotalGaji();
+        }
+
+        function updateGaji(id, jenis, inputEl) { 
+            formatRibuan(inputEl); 
+            let panjangTeks = inputEl.value.length;
+            if (panjangTeks === 0) panjangTeks = 1;
+            inputEl.style.width = Math.max(8, panjangTeks + 2) + 'ch';
+            let r = dataRekapAktif.find(x => x.id === id); 
+            r[jenis] = unformatRibuan(inputEl.value); 
+            let bersih = (r.upahKotor||0) + (r.nomLem4||0) + (r.bonus||0) - (r.potRutin||0) - (r.kasbon||0) - (r.tabungan||0) - (r.potLain||0);
+            document.getElementById(`cg-bersih-${id}`).innerText = formatRibuanStr(bersih); 
+            kalkulasiGrandTotalGaji(); 
         }
 
         function renderTopProduksi() {
@@ -1601,7 +1656,6 @@
             }
         }
 
-        // KUMPULAN FUNGSI SETTING DASHBOARD ------------------------------------
         function renderPengaturanDashboard() {
             document.getElementById('set-dash-karyawan').checked = dbDashConf.showKaryawan;
             document.getElementById('set-dash-produksi').checked = dbDashConf.showProduksi;
@@ -1646,7 +1700,6 @@
             alert('Pengaturan tampilan dashboard berhasil disimpan!');
             renderDashboard(); // refresh chart & widget total produksi
         }
-        // ----------------------------------------------------------------------
 
         function renderTabelHarian() {
             const divId = document.getElementById('select-divisi-harian').value;
@@ -2125,8 +2178,12 @@
         function kalkulasiGrandTotalGaji() {
             let total = 0;
             dataRekapAktif.forEach(r => {
-                let bersih = r.upahKotor + r.bonus - r.potRutin - r.kasbon - r.tabungan - r.potLain;
-                total += bersih;
+                if(r.selected !== false) {
+                    let kotor = r.upahKotor || 0;
+                    let lem4 = r.nomLem4 || 0;
+                    let bersih = kotor + lem4 + (r.bonus || 0) - (r.potRutin || 0) - (r.kasbon || 0) - (r.tabungan || 0) - (r.potLain || 0);
+                    total += bersih;
+                }
             });
             
             const textEl = document.getElementById('cg-grand-total');
@@ -2139,7 +2196,7 @@
             const akhir = document.getElementById('cg-akhir').value;
             const tbody = document.getElementById('tbody-cetak-gaji');
             
-            if(!divId || !mulai || !akhir) return tbody.innerHTML = `<tr><td colspan="8" class="py-10 text-center text-gray-400">Lengkapi periode & divisi.</td></tr>`;
+            if(!divId || !mulai || !akhir) return tbody.innerHTML = `<tr><td colspan="9" class="py-10 text-center text-gray-400">Lengkapi periode & divisi.</td></tr>`;
 
             dataRekapAktif = [];
             const arrDates = getDatesBetween(mulai, akhir);
@@ -2166,16 +2223,18 @@
                 dataRekapAktif.push({ 
                     id: k.id, nama: k.nama, tReg, tLem, tLem2, tLem3, 
                     upahKotor: kotor, potRutin: nomKas + nomListrik, nomKas, nomListrik, 
-                    bonus: 0, catatanBonus: '', kasbon: 0, tabungan: 0, potLain: 0, catatanPotLain: '' 
+                    bonus: 0, catatanBonus: '', kasbon: 0, tabungan: 0, potLain: 0, catatanPotLain: '',
+                    selected: true, ketLem1: '', ketLem2: '', ketLem3: '', nomLem4: 0, ketLem4: '' 
                 });
             });
             
             if(dataRekapAktif.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="py-10 text-center text-gray-400">Tidak ada karyawan yang masuk/memiliki produksi pada periode ini.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="9" class="py-10 text-center text-gray-400">Tidak ada karyawan yang masuk/memiliki produksi pada periode ini.</td></tr>`;
                 kalkulasiGrandTotalGaji();
                 return;
             }
 
+            document.getElementById('chk-all-gaji').checked = true;
             document.getElementById('tbody-cetak-gaji').innerHTML = dataRekapAktif.map(r => {
                 let bersih = r.upahKotor + r.bonus - r.potRutin - r.kasbon - r.tabungan - r.potLain;
                 let infoLem = `R: ${r.tReg} | L1: ${r.tLem}`;
@@ -2183,44 +2242,50 @@
                 if(r.tLem3 > 0) infoLem += ` | L3: ${r.tLem3}`;
 
                 return `<tr>
-                    <td class="font-bold text-gray-800">${r.nama}<div class="text-xs text-gray-400">${infoLem}</div></td>
-                    <td class="text-right font-medium">${formatRibuanStr(r.upahKotor)}</td>
-                    <td class="text-center align-top relative">
+                    <td class="text-center align-top pt-4 border-r border-gray-100 dark:border-gray-700">
+                        <input type="checkbox" class="chk-gaji-row chk-potongan w-4 h-4" value="${r.id}" ${r.selected ? 'checked' : ''} onchange="toggleRowGaji(${r.id}, this)">
+                    </td>
+                    <td class="font-bold text-gray-800 align-top pt-4 pl-3">
+                        ${r.nama}
+                        <div class="text-[11px] text-gray-400 mt-0.5">${infoLem}</div>
+                    </td>
+                    <td class="text-right font-medium align-top pt-4">
+                        <div class="flex justify-end items-center gap-1 relative group">
+                            <span>${formatRibuanStr(r.upahKotor)}</span>
+                            <button onclick="document.getElementById('lem-notes-${r.id}').classList.toggle('hidden')" class="shrink-0 w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-[10px] text-blue-600 hover:bg-blue-200 transition" title="Catatan Lembur">💬</button>
+                        </div>
+                        <div id="lem-notes-${r.id}" class="hidden flex-col gap-1 mt-2 p-2 bg-blue-50/50 dark:bg-gray-900 border border-blue-100 dark:border-gray-700 rounded-lg min-w-[160px] text-left">
+                            <span class="text-[9px] font-bold text-gray-500 uppercase">Ket Lembur</span>
+                            ${r.tLem > 0 ? `<input type="text" placeholder="Lembur 1..." oninput="updateGajiData(${r.id}, 'ketLem1', this.value)" class="note-input active !bg-white">` : ''}
+                            ${r.tLem2 > 0 ? `<input type="text" placeholder="Lembur 2..." oninput="updateGajiData(${r.id}, 'ketLem2', this.value)" class="note-input active !bg-white">` : ''}
+                            ${r.tLem3 > 0 ? `<input type="text" placeholder="Lembur 3..." oninput="updateGajiData(${r.id}, 'ketLem3', this.value)" class="note-input active !bg-white">` : ''}
+                        </div>
+                    </td>
+                    <td class="text-center align-top pt-3 relative">
                         <div class="flex justify-center items-center gap-1">
                             <input type="text" oninput="updateGaji(${r.id}, 'bonus', this)" style="width: 8ch;" class="modern-input min-w-[70px] max-w-[200px] text-center text-blue-600 font-bold bg-blue-50/50 dark:bg-gray-800 px-2 transition-all duration-200" placeholder="0">
                             <button onclick="document.getElementById('note-${r.id}').classList.toggle('active')" class="shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-xs dark:bg-blue-900/50">💬</button>
                         </div>
                         <input type="text" id="note-${r.id}" oninput="dataRekapAktif.find(x=>x.id===${r.id}).catatanBonus=this.value" class="note-input" placeholder="Ket bonus...">
                     </td>
-                    <td class="text-right font-medium text-gray-500">${formatRibuanStr(r.potRutin)}</td>
-                    <td class="text-center align-top">
+                    <td class="text-right font-medium text-gray-500 align-top pt-4">${formatRibuanStr(r.potRutin)}</td>
+                    <td class="text-center align-top pt-3">
                         <input type="text" oninput="updateGaji(${r.id}, 'kasbon', this)" style="width: 8ch;" class="modern-input min-w-[70px] max-w-[200px] text-center text-red-600 font-bold bg-red-50/50 dark:bg-gray-800 px-2 transition-all duration-200" placeholder="0">
                     </td>
-                    <td class="text-center align-top">
+                    <td class="text-center align-top pt-3">
                         <input type="text" oninput="updateGaji(${r.id}, 'tabungan', this)" style="width: 8ch;" class="modern-input min-w-[70px] max-w-[200px] text-center text-green-600 font-bold bg-green-50/50 dark:bg-gray-800 px-2 transition-all duration-200" placeholder="0">
                     </td>
-                    <td class="text-center align-top relative">
+                    <td class="text-center align-top pt-3 relative">
                         <div class="flex justify-center items-center gap-1">
                             <input type="text" oninput="updateGaji(${r.id}, 'potLain', this)" style="width: 8ch;" class="modern-input min-w-[70px] max-w-[200px] text-center text-orange-600 font-bold bg-orange-50/50 dark:bg-gray-800 px-2 transition-all duration-200" placeholder="0">
                             <button onclick="document.getElementById('notepot-${r.id}').classList.toggle('active')" class="shrink-0 w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-xs dark:bg-orange-900/50">💬</button>
                         </div>
                         <input type="text" id="notepot-${r.id}" oninput="dataRekapAktif.find(x=>x.id===${r.id}).catatanPotLain=this.value" class="note-input" style="border-color:#fdba74; background:#fff7ed;" placeholder="Ket pot lain...">
                     </td>
-                    <td class="text-right font-bold text-blue-600 text-lg align-top" id="cg-bersih-${r.id}">${formatRibuanStr(bersih)}</td>
+                    <td class="text-right font-bold text-blue-600 text-lg align-top pt-4" id="cg-bersih-${r.id}">${formatRibuanStr(bersih)}</td>
                 </tr>`;
             }).join('');
             
-            kalkulasiGrandTotalGaji(); 
-        }
-
-        function updateGaji(id, jenis, inputEl) { 
-            formatRibuan(inputEl); 
-            let panjangTeks = inputEl.value.length;
-            if (panjangTeks === 0) panjangTeks = 1;
-            inputEl.style.width = Math.max(8, panjangTeks + 2) + 'ch';
-            let r = dataRekapAktif.find(x => x.id === id); 
-            r[jenis] = unformatRibuan(inputEl.value); 
-            document.getElementById(`cg-bersih-${id}`).innerText = formatRibuanStr(r.upahKotor + r.bonus - r.potRutin - r.kasbon - r.tabungan - r.potLain); 
             kalkulasiGrandTotalGaji(); 
         }
 
@@ -2240,7 +2305,7 @@
             let upahLem3 = (r.tLem3 || 0) * (kTarget.tarifLem3 || 0);
 
             let kotorTersimpan = r.upahKotor || (upahReg + upahLem + upahLem2 + upahLem3);
-            let totalUpah = kotorTersimpan + (r.bonus || 0);
+            let totalUpah = kotorTersimpan + (r.nomLem4 || 0) + (r.bonus || 0);
             let totalPotongan = (r.potRutin || 0) + (r.kasbon || 0) + (r.tabungan || 0) + (r.potLain || 0); 
             let bersih = totalUpah - totalPotongan;
             
@@ -2251,9 +2316,22 @@
             t += "UPAH DITERIMA:\n";
             
             if((r.tReg || 0) > 0) t += alignLR(`Reguler (${r.tReg || 0}${unit} x ${formatRibuanStr(kTarget.tarifReg || 0)})`, formatRibuanStr(upahReg), w) + "\n";
-            if((r.tLem || 0) > 0) t += alignLR(`Lembur 1 (${r.tLem || 0}${unit} x ${formatRibuanStr(kTarget.tarifLem || 0)})`, formatRibuanStr(upahLem), w) + "\n";
-            if((r.tLem2 || 0) > 0) t += alignLR(`Lembur 2 (${r.tLem2 || 0}${unit} x ${formatRibuanStr(kTarget.tarifLem2 || 0)})`, formatRibuanStr(upahLem2), w) + "\n";
-            if((r.tLem3 || 0) > 0) t += alignLR(`Lembur 3 (${r.tLem3 || 0}${unit} x ${formatRibuanStr(kTarget.tarifLem3 || 0)})`, formatRibuanStr(upahLem3), w) + "\n";
+            if((r.tLem || 0) > 0) {
+                t += alignLR(`Lem 1 (${r.tLem || 0}${unit} x ${formatRibuanStr(kTarget.tarifLem || 0)})`, formatRibuanStr(upahLem), w) + "\n";
+                if(r.ketLem1) t += `  * ${r.ketLem1}\n`;
+            }
+            if((r.tLem2 || 0) > 0) {
+                t += alignLR(`Lem 2 (${r.tLem2 || 0}${unit} x ${formatRibuanStr(kTarget.tarifLem2 || 0)})`, formatRibuanStr(upahLem2), w) + "\n";
+                if(r.ketLem2) t += `  * ${r.ketLem2}\n`;
+            }
+            if((r.tLem3 || 0) > 0) {
+                t += alignLR(`Lem 3 (${r.tLem3 || 0}${unit} x ${formatRibuanStr(kTarget.tarifLem3 || 0)})`, formatRibuanStr(upahLem3), w) + "\n";
+                if(r.ketLem3) t += `  * ${r.ketLem3}\n`;
+            }
+            if((r.nomLem4 || 0) > 0) {
+                t += alignLR(`Lembur 4 (Manual)`, formatRibuanStr(r.nomLem4 || 0), w) + "\n";
+                if(r.ketLem4) t += `  * ${r.ketLem4}\n`;
+            }
             
             if((r.bonus || 0) > 0) t += alignLR(`Bonus${r.catatanBonus?' ('+r.catatanBonus+')':''}`, formatRibuanStr(r.bonus || 0), w) + "\n";
             t += divider + alignLR("JUMLAH UPAH", formatRibuanStr(totalUpah), w) + "\n\n";
@@ -2272,13 +2350,19 @@
         }
 
         function generatePratinjau() {
+            let targetData = dataRekapAktif.filter(r => r.selected !== false);
             const size = document.getElementById('preview-ukuran').value;
             const w = size === '80' ? 48 : 32;
             const maxWidthClass = size === '80' ? 'max-w-[480px]' : 'max-w-[320px]'; 
             let allHtml = ""; 
             
-            for(let i=0; i < dataRekapAktif.length; i++) {
-                let strukText = generateStrukText(dataRekapAktif[i], w).trimEnd();
+            if(targetData.length === 0) {
+                document.getElementById('preview-content').innerHTML = `<div class="text-center text-gray-400 mt-10">Pilih minimal satu karyawan untuk melihat pratinjau.</div>`;
+                return;
+            }
+
+            for(let i=0; i < targetData.length; i++) {
+                let strukText = generateStrukText(targetData[i], w).trimEnd();
                 allHtml += `<div class="bg-white text-black p-5 mb-4 shadow-sm border-t-4 border-dashed border-gray-300 mx-auto ${maxWidthClass} whitespace-pre-wrap font-mono text-[13px] leading-snug overflow-x-auto">${strukText}</div>`;
             }
             
@@ -2286,7 +2370,9 @@
         }
 
         function bukaModalPratinjau() {
-            if(dataRekapAktif.length === 0) return alert('Tidak ada data gaji untuk dipratinjau!');
+            let targetData = dataRekapAktif.filter(r => r.selected !== false);
+            if(targetData.length === 0) return alert('Silakan centang minimal satu karyawan untuk mencetak gaji!');
+            
             const tglMulai = document.getElementById('cg-mulai').value; const tglAkhir = document.getElementById('cg-akhir').value;
             const divId = document.getElementById('cg-divisi').value; const divNama = dbDivisi.find(d => d.id == divId)?.nama || "Divisi";
             let periodKey = `${divNama} | ${formatTanggal(tglMulai)} - ${formatTanggal(tglAkhir)}`;
@@ -2298,11 +2384,12 @@
         }
 
         async function simpanSaldoGajiCore(periodKey, divId, divNama) {
+            let targetData = dataRekapAktif.filter(r => r.selected !== false);
             let totKasMasuk = 0; let totLisMasuk = 0;
             let tabunganInserts = [];
             
-            for(let i=0; i < dataRekapAktif.length; i++) {
-                let r = dataRekapAktif[i]; let kTarget = dbKaryawan.find(k => k.id === r.id);
+            for(let i=0; i < targetData.length; i++) {
+                let r = targetData[i]; let kTarget = dbKaryawan.find(k => k.id === r.id);
                 if(r.tabungan > 0) {
                     let newSaldo = Number(kTarget.saldo_tabungan) + Number(r.tabungan);
                     await _supabase.from('karyawan').update({ saldo_tabungan: newSaldo }).eq('id', kTarget.id);
@@ -2319,18 +2406,21 @@
             if(totKasMasuk > 0) await _supabase.from('transaksi_perusahaan').insert([{ jenis: 'kas', tgl: getTglHariIni(), keterangan: `Potongan Gaji (${divNama})`, masuk: totKasMasuk, keluar: 0 }]);
             if(totLisMasuk > 0) await _supabase.from('transaksi_perusahaan').insert([{ jenis: 'listrik', tgl: getTglHariIni(), keterangan: `Potongan Gaji (${divNama})`, masuk: totLisMasuk, keluar: 0 }]);
             
-            await _supabase.from('riwayat_gaji').insert([{ div_id: parseInt(divId), label_periode: periodKey, detail_json: dataRekapAktif }]);
+            await _supabase.from('riwayat_gaji').insert([{ div_id: parseInt(divId), label_periode: periodKey, detail_json: targetData }]);
             document.getElementById('peringatan-tersimpan').classList.remove('hidden'); fetchAllData(); return true;
         }
 
         async function prosesCetakDanSimpan(metode) {
+            let targetData = dataRekapAktif.filter(r => r.selected !== false);
+            if(targetData.length === 0) return alert("Belum ada karyawan yang dicentang!");
+
             const tglMulai = document.getElementById('cg-mulai').value; const tglAkhir = document.getElementById('cg-akhir').value;
             const divId = document.getElementById('cg-divisi').value; const divNama = dbDivisi.find(d => d.id == divId)?.nama || "Divisi";
             let periodKey = `${divNama} | ${formatTanggal(tglMulai)} - ${formatTanggal(tglAkhir)}`;
             let isSaved = logGajiTerproses.some(log => log.label === periodKey);
             
             if(!isSaved) {
-                if(!confirm("Saldo belum tersimpan! Anda yakin ingin MENCETAK sekaligus MEMASUKKAN potongan & tabungan gaji ke buku saldo?")) return;
+                if(!confirm("Anda yakin ingin MEMPROSES (SIMPAN & CETAK) gaji untuk karyawan yang dicentang? Saldo Tabungan & Kas akan langsung diupdate.")) return;
                 let success = await simpanSaldoGajiCore(periodKey, divId, divNama); if(!success) return;
             }
 
@@ -2339,11 +2429,13 @@
         }
 
         async function cetakGajiBluetoothOnly() {
-            if(dataRekapAktif.length === 0) return;
+            let targetData = dataRekapAktif.filter(r => r.selected !== false);
+            if(targetData.length === 0) return;
+
             const w = document.getElementById('preview-ukuran').value === '80' ? 48 : 32;
             const connected = await initBluetooth(); if(!connected) return;
-            for(let i=0; i < dataRekapAktif.length; i++) { 
-                let strukText = generateStrukText(dataRekapAktif[i], w);
+            for(let i=0; i < targetData.length; i++) { 
+                let strukText = generateStrukText(targetData[i], w);
                 strukText = tambahkanMarginKanan(strukText, w);
                 await printBT(strukText); 
                 await new Promise(res => setTimeout(res, 1200)); 
@@ -2352,11 +2444,13 @@
         }
 
         function cetakGajiUSB() {
-            if(dataRekapAktif.length === 0) return;
+            let targetData = dataRekapAktif.filter(r => r.selected !== false);
+            if(targetData.length === 0) return;
+
             const w = document.getElementById('preview-ukuran').value === '80' ? 48 : 32;
             let allText = ""; 
-            for(let i=0; i < dataRekapAktif.length; i++) {
-                let strukText = generateStrukText(dataRekapAktif[i], w);
+            for(let i=0; i < targetData.length; i++) {
+                let strukText = generateStrukText(targetData[i], w);
                 allText += tambahkanMarginKanan(strukText, w) + "\n\n";
             }
             
@@ -2381,13 +2475,14 @@
             tbody.innerHTML = filtered.map(x => {
                 let grandTotal = x.data.reduce((sum, r) => {
                     let kotor = r.upahKotor || 0;
+                    let lem4 = r.nomLem4 || 0;
                     let bns = r.bonus || 0;
                     let pRutin = r.potRutin || 0;
                     let kbon = r.kasbon || 0;
                     let tab = r.tabungan || 0;
                     let pLain = r.potLain || 0;
                     
-                    let bersih = kotor + bns - pRutin - kbon - tab - pLain;
+                    let bersih = kotor + lem4 + bns - pRutin - kbon - tab - pLain;
                     return sum + bersih;
                 }, 0);
                 
@@ -2414,14 +2509,52 @@
             document.getElementById('judul-detail-arsip').innerText = `Periode: ${riwayat.label.split(' | ')[1] || riwayat.label}`;
             document.getElementById('arsip-print-controls').classList.replace('hidden', 'flex');
             
+            let cbHtml = `
+                <label class="flex items-center gap-2 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 px-3 py-1.5 rounded-lg shadow-sm text-xs cursor-pointer hover:border-blue-300 transition w-full mb-1">
+                    <input type="checkbox" id="chk-all-arsip" class="chk-potongan w-4 h-4" checked onchange="toggleAllArsip(this, ${id})">
+                    <span class="font-bold text-blue-700 dark:text-blue-300">Pilih Semua Karyawan</span>
+                </label>
+            `;
+
+            cbHtml += riwayat.data.map((r, i) => `
+                <label class="flex items-center gap-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 px-3 py-1.5 rounded-lg shadow-sm text-xs cursor-pointer hover:border-blue-300 transition">
+                    <input type="checkbox" class="chk-arsip-print chk-potongan w-4 h-4" value="${i}" checked onchange="updateArsipPreview(${id}); checkArsipAllState()">
+                    <span class="font-bold text-gray-700 dark:text-gray-300">${r.nama}</span>
+                </label>
+            `).join('');
+            
+            document.getElementById('arsip-karyawan-list').innerHTML = cbHtml;
+            updateArsipPreview(id);
+        }
+
+        function toggleAllArsip(el, id) {
+            const isChecked = el.checked;
+            document.querySelectorAll('.chk-arsip-print').forEach(cb => cb.checked = isChecked);
+            updateArsipPreview(id);
+        }
+
+        function checkArsipAllState() {
+            const allBoxes = document.querySelectorAll('.chk-arsip-print');
+            const allChecked = Array.from(allBoxes).every(cb => cb.checked);
+            document.getElementById('chk-all-arsip').checked = allChecked;
+        }
+
+        function updateArsipPreview(id) {
+            const riwayat = logGajiTerproses.find(x => x.id === id); if(!riwayat) return;
             const size = document.getElementById('arsip-ukuran').value || '80';
             const w = size === '80' ? 48 : 32;
             const maxWidthClass = size === '80' ? 'max-w-[480px]' : 'max-w-[320px]';
             
+            let selectedIndexes = Array.from(document.querySelectorAll('.chk-arsip-print:checked')).map(cb => parseInt(cb.value));
+            
             let allHtml = ""; 
-            for(let i = 0; i < riwayat.data.length; i++) {
+            selectedIndexes.forEach(i => {
                 let strukText = generateStrukTextRiwayat(riwayat.data[i], w, riwayat.label).trimEnd();
                 allHtml += `<div class="bg-white text-black p-5 mb-4 shadow-sm border-t-4 border-dashed border-gray-300 mx-auto ${maxWidthClass} whitespace-pre-wrap font-mono text-[13px] leading-snug overflow-x-auto">${strukText}</div>`;
+            });
+            
+            if (selectedIndexes.length === 0) {
+                allHtml = `<div class="text-center text-gray-400 mt-10 text-sm font-medium">Pilih minimal satu karyawan untuk melihat pratinjau.</div>`;
             }
             
             document.getElementById('preview-arsip-content').innerHTML = allHtml;
@@ -2442,21 +2575,24 @@
             if(!arsipAktifTerpilih) return;
             let ukuranStr = document.getElementById('arsip-ukuran').value; let w = ukuranStr === '80' ? 48 : 32;
             const riwayat = logGajiTerproses.find(x => x.id === arsipAktifTerpilih); if(!riwayat) return;
+            let selectedIndexes = Array.from(document.querySelectorAll('.chk-arsip-print:checked')).map(cb => parseInt(cb.value));
+
+            if (selectedIndexes.length === 0) return alert("Pilih minimal satu karyawan untuk dicetak ulang!");
 
             if (metode === 'usb') {
                 let allText = ""; 
-                for(let i = 0; i < riwayat.data.length; i++) {
+                selectedIndexes.forEach(i => {
                     let strukText = generateStrukTextRiwayat(riwayat.data[i], w, riwayat.label);
                     allText += tambahkanMarginKanan(strukText, w) + "\n\n";
-                }
+                });
                 let fFamily = dbSettings.printFontFamily; let fSize = dbSettings.printFontSize; let fWeight = dbSettings.printFontWeight;
                 let htmlText = allText.replace(/TERIMA BERSIH.*/g, match => `<span style="font-size: 1.3em; font-weight: bold; display: block; margin: 4px 0;">${match}</span>`);
                 document.getElementById('print-area').innerHTML = `<div style="font-family: ${fFamily}; font-size: ${fSize}; font-weight: ${fWeight}; margin: 0; padding: 0; white-space: pre-wrap;">${htmlText}</div>`;
                 window.print();
             } else if (metode === 'bt') {
                 const connected = await initBluetooth(); if(!connected) return;
-                for(let i = 0; i < riwayat.data.length; i++) { 
-                    let strukText = generateStrukTextRiwayat(riwayat.data[i], w, riwayat.label);
+                for (let idx of selectedIndexes) {
+                    let strukText = generateStrukTextRiwayat(riwayat.data[idx], w, riwayat.label);
                     strukText = tambahkanMarginKanan(strukText, w);
                     await printBT(strukText); 
                     await new Promise(res => setTimeout(res, 1200)); 
@@ -2478,7 +2614,7 @@
             let upahLem3 = (r.tLem3 || 0) * (kTarget.tarifLem3 || 0);
 
             let kotorTersimpan = r.upahKotor || (upahReg + upahLem + upahLem2 + upahLem3);
-            let totalUpah = kotorTersimpan + (r.bonus || 0);
+            let totalUpah = kotorTersimpan + (r.nomLem4 || 0) + (r.bonus || 0);
             let totalPotongan = (r.potRutin || 0) + (r.kasbon || 0) + (r.tabungan || 0) + (r.potLain || 0); 
             let bersih = totalUpah - totalPotongan;
             let divider = dbSettings.printerDivider ? "-".repeat(w) + "\n" : "";
@@ -2488,9 +2624,22 @@
             t += "UPAH DITERIMA:\n";
             
             if((r.tReg || 0) > 0) t += alignLR(`Reguler (${r.tReg || 0}${unit} x ${formatRibuanStr(kTarget.tarifReg || 0)})`, formatRibuanStr(upahReg), w) + "\n";
-            if((r.tLem || 0) > 0) t += alignLR(`Lembur 1 (${r.tLem || 0}${unit} x ${formatRibuanStr(kTarget.tarifLem || 0)})`, formatRibuanStr(upahLem), w) + "\n";
-            if((r.tLem2 || 0) > 0) t += alignLR(`Lembur 2 (${r.tLem2 || 0}${unit} x ${formatRibuanStr(kTarget.tarifLem2 || 0)})`, formatRibuanStr(upahLem2), w) + "\n";
-            if((r.tLem3 || 0) > 0) t += alignLR(`Lembur 3 (${r.tLem3 || 0}${unit} x ${formatRibuanStr(kTarget.tarifLem3 || 0)})`, formatRibuanStr(upahLem3), w) + "\n";
+            if((r.tLem || 0) > 0) {
+                t += alignLR(`Lem 1 (${r.tLem || 0}${unit} x ${formatRibuanStr(kTarget.tarifLem || 0)})`, formatRibuanStr(upahLem), w) + "\n";
+                if(r.ketLem1) t += `  * ${r.ketLem1}\n`;
+            }
+            if((r.tLem2 || 0) > 0) {
+                t += alignLR(`Lem 2 (${r.tLem2 || 0}${unit} x ${formatRibuanStr(kTarget.tarifLem2 || 0)})`, formatRibuanStr(upahLem2), w) + "\n";
+                if(r.ketLem2) t += `  * ${r.ketLem2}\n`;
+            }
+            if((r.tLem3 || 0) > 0) {
+                t += alignLR(`Lem 3 (${r.tLem3 || 0}${unit} x ${formatRibuanStr(kTarget.tarifLem3 || 0)})`, formatRibuanStr(upahLem3), w) + "\n";
+                if(r.ketLem3) t += `  * ${r.ketLem3}\n`;
+            }
+            if((r.nomLem4 || 0) > 0) {
+                t += alignLR(`Lembur 4 (Manual)`, formatRibuanStr(r.nomLem4 || 0), w) + "\n";
+                if(r.ketLem4) t += `  * ${r.ketLem4}\n`;
+            }
             
             if((r.bonus || 0) > 0) t += alignLR(`Bonus${r.catatanBonus?' ('+r.catatanBonus+')':''}`, formatRibuanStr(r.bonus || 0), w) + "\n";
             t += divider + alignLR("JUMLAH UPAH", formatRibuanStr(totalUpah), w) + "\n\n";
@@ -2564,189 +2713,301 @@
                 tbody.innerHTML = riwayat.map(r => {
                     let d = new Date(r.tgl);
                     let tglStr = `${("0"+d.getDate()).slice(-2)}/${("0"+(d.getMonth()+1)).slice(-2)}/${d.getFullYear()} ${("0"+d.getHours()).slice(-2)}:${("0"+d.getMinutes()).slice(-2)}`;
+                    let rMasuk = r.jenis === 'masuk' ? formatRibuanStr(r.nominal) : '-';
+                    let rKeluar = r.jenis === 'keluar' ? formatRibuanStr(r.nominal) : '-';
                     return `
-                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-800 border-b border-gray-100 dark:border-gray-700">
-                        <td class="pl-4 py-3 text-sm">${tglStr}</td>
-                        <td class="py-3 text-sm font-medium">${r.keterangan || '-'}</td>
-                        <td class="py-3 text-right font-bold text-green-600 dark:text-green-400">${r.jenis === 'masuk' ? '+ ' + formatRibuanStr(r.nominal) : '-'}</td>
-                        <td class="py-3 text-right font-bold text-red-500 dark:text-red-400">${r.jenis === 'keluar' ? '- ' + formatRibuanStr(r.nominal) : '-'}</td>
-                    </tr>
-                    `;
+                    <tr>
+                        <td class="pl-4 border-b border-gray-100 dark:border-gray-700 py-3 text-sm">${tglStr}</td>
+                        <td class="border-b border-gray-100 dark:border-gray-700 py-3 font-medium">${r.keterangan || '-'}</td>
+                        <td class="text-right border-b border-gray-100 dark:border-gray-700 py-3 font-bold text-green-600 dark:text-green-400">${rMasuk}</td>
+                        <td class="text-right border-b border-gray-100 dark:border-gray-700 py-3 font-bold text-red-500 dark:text-red-400">${rKeluar}</td>
+                    </tr>`;
                 }).join('');
             }
-            
             document.getElementById('modal-rincian-tabungan').classList.replace('hidden', 'flex');
         }
 
         function renderLedgerPerusahaan() {
-            let sKas=0; document.getElementById('tbody-kas-perusahaan').innerHTML = dbPerusahaan.kas.map(x=>{ sKas+=(x.masuk-x.keluar); return `<tr><td>${formatTanggal(x.tgl)}</td><td class="font-medium">${x.desc}</td><td class="text-right text-green-600">${x.masuk>0?formatRibuanStr(x.masuk):'-'}</td><td class="text-right text-red-500">${x.keluar>0?formatRibuanStr(x.keluar):'-'}</td></tr>`;}).join(''); document.getElementById('tot-kas-perusahaan-tab').innerText = `Rp ${formatRibuanStr(sKas)}`;
-            let sLis=0; document.getElementById('tbody-listrik-perusahaan').innerHTML = dbPerusahaan.listrik.map(x=>{ sLis+=(x.masuk-x.keluar); return `<tr><td>${formatTanggal(x.tgl)}</td><td class="font-medium">${x.desc}</td><td class="text-right text-green-600">${x.masuk>0?formatRibuanStr(x.masuk):'-'}</td><td class="text-right text-red-500">${x.keluar>0?formatRibuanStr(x.keluar):'-'}</td></tr>`;}).join(''); document.getElementById('tot-listrik-perusahaan-tab').innerText = `Rp ${formatRibuanStr(sLis)}`;
+            let tKasHTML = ""; let sKas = 0;
+            dbPerusahaan.kas.sort((a,b) => new Date(a.tgl) - new Date(b.tgl)).forEach(t => {
+                sKas += (t.masuk - t.keluar);
+                tKasHTML += `<tr><td>${formatTanggal(t.tgl.split('T')[0])}</td><td>${t.desc}</td><td class="text-right text-green-600">${t.masuk>0?formatRibuanStr(t.masuk):'-'}</td><td class="text-right text-red-500">${t.keluar>0?formatRibuanStr(t.keluar):'-'}</td></tr>`;
+            });
+            if(tKasHTML==="") tKasHTML=`<tr><td colspan="4" class="py-10 text-center text-gray-400">Belum ada transaksi.</td></tr>`;
+            document.getElementById('tbody-kas-perusahaan').innerHTML = tKasHTML;
+            if(document.getElementById('tot-kas-perusahaan-tab')) document.getElementById('tot-kas-perusahaan-tab').innerText = `Rp ${formatRibuanStr(sKas)}`;
+
+            let tLisHTML = ""; let sLis = 0;
+            dbPerusahaan.listrik.sort((a,b) => new Date(a.tgl) - new Date(b.tgl)).forEach(t => {
+                sLis += (t.masuk - t.keluar);
+                tLisHTML += `<tr><td>${formatTanggal(t.tgl.split('T')[0])}</td><td>${t.desc}</td><td class="text-right text-green-600">${t.masuk>0?formatRibuanStr(t.masuk):'-'}</td><td class="text-right text-red-500">${t.keluar>0?formatRibuanStr(t.keluar):'-'}</td></tr>`;
+            });
+            if(tLisHTML==="") tLisHTML=`<tr><td colspan="4" class="py-10 text-center text-gray-400">Belum ada transaksi.</td></tr>`;
+            document.getElementById('tbody-listrik-perusahaan').innerHTML = tLisHTML;
+            if(document.getElementById('tot-listrik-perusahaan-tab')) document.getElementById('tot-listrik-perusahaan-tab').innerText = `Rp ${formatRibuanStr(sLis)}`;
         }
 
         function bukaModalTransaksi(jenis) {
-            document.getElementById('trans-jenis').value = jenis; document.getElementById('title-transaksi').innerText = jenis === 'kas' ? 'Catat Transaksi Kas' : 'Catat Transaksi Listrik & Air';
-            document.getElementById('trans-tipe').value = 'keluar'; document.getElementById('trans-nominal').value = ''; document.getElementById('trans-ket').value = '';
+            document.getElementById('trans-jenis').value = jenis;
+            document.getElementById('title-transaksi').innerText = jenis === 'kas' ? 'Catat Transaksi Kas' : 'Catat Transaksi Listrik & Air';
+            document.getElementById('trans-tipe').value = 'masuk';
+            document.getElementById('trans-nominal').value = '';
+            document.getElementById('trans-ket').value = '';
             
-            document.getElementById('trans-cetak-bt').checked = false;
-            document.getElementById('trans-cetak-usb').checked = false;
-            document.getElementById('trans-ukuran-print').value = dbSettings.printerSize || '80';
+            if(dbSettings.printerAutoCut !== undefined) {
+                document.getElementById('trans-cetak-bt').checked = false;
+                document.getElementById('trans-cetak-usb').checked = false;
+            }
 
             document.getElementById('modal-transaksi').classList.replace('hidden', 'flex');
+            setTimeout(() => document.getElementById('trans-nominal').focus(), 100);
         }
 
         async function simpanTransaksi() {
-            const jenis = document.getElementById('trans-jenis').value; 
-            const tipe = document.getElementById('trans-tipe').value; 
-            const nominal = unformatRibuan(document.getElementById('trans-nominal').value); 
-            const ket = document.getElementById('trans-ket').value; 
+            let jenis = document.getElementById('trans-jenis').value;
+            let tipe = document.getElementById('trans-tipe').value;
+            let nom = unformatRibuan(document.getElementById('trans-nominal').value);
+            let ket = document.getElementById('trans-ket').value;
+
+            if(nom <= 0 || !ket) return alert("Lengkapi nominal & keterangan!");
+
+            let dt = { jenis: jenis, tgl: getTglHariIni(), keterangan: ket, masuk: tipe === 'masuk' ? nom : 0, keluar: tipe === 'keluar' ? nom : 0 };
             
-            const isCetakBT = document.getElementById('trans-cetak-bt').checked;
-            const isCetakUSB = document.getElementById('trans-cetak-usb').checked;
-            const w = document.getElementById('trans-ukuran-print').value === '80' ? 48 : 32;
-
-            if(nominal <= 0 || ket.trim() === '') return alert('Isi nominal dan keterangan dengan benar!');
-
-            await _supabase.from('transaksi_perusahaan').insert([{ jenis: jenis, tgl: getTglHariIni(), keterangan: ket, masuk: tipe === 'masuk' ? nominal : 0, keluar: tipe === 'keluar' ? nominal : 0 }]);
-            let saldoNow = dbPerusahaan[jenis].reduce((sum, item) => sum + (item.masuk - item.keluar), 0) + (tipe === 'masuk' ? nominal : -nominal);
-
-            if(isCetakBT || isCetakUSB) {
-                let titleStr = jenis === 'kas' ? 'TRANSAKSI KAS' : 'TRANSAKSI LISTRIK & Air';
-                let st = center("SBR SYSTEMS", w) + "\n" + center(titleStr, w) + "\n" + "-".repeat(w) + "\n" + `Tgl : ${getTglWaktu()}\nKet : ${ket}\n` + "-".repeat(w) + "\n" + alignLR(tipe==='masuk'?'UANG MASUK':'UANG KELUAR', formatRibuanStr(nominal), w) + "\n" + "-".repeat(w) + "\n" + alignLR("SALDO TERKINI", formatRibuanStr(saldoNow), w) + "\n" + "-".repeat(w) + "\n" + center("Terima Kasih", w) + "\n\n";
+            try {
+                let { error } = await _supabase.from('transaksi_perusahaan').insert([dt]);
+                if(error) throw error;
                 
-                st = tambahkanMarginKanan(st, w);
+                dbPerusahaan[jenis].push({ tgl: dt.tgl, desc: ket, masuk: dt.masuk, keluar: dt.keluar });
+                
+                let checkBT = document.getElementById('trans-cetak-bt').checked;
+                let checkUSB = document.getElementById('trans-cetak-usb').checked;
+                
+                if (checkBT || checkUSB) {
+                    let w = document.getElementById('trans-ukuran-print').value === '80' ? 48 : 32;
+                    let titleStr = jenis === 'kas' ? "KAS PERUSAHAAN" : "LISTRIK & AIR PERUSAHAAN";
+                    let typeStr = tipe === 'masuk' ? "Penerimaan / Masuk" : "Pengeluaran / Keluar";
+                    let signStr = tipe === 'masuk' ? "+" : "-";
+                    
+                    let divider = dbSettings.printerDivider ? "-".repeat(w) + "\n" : "";
+                    
+                    let t = center(dbSettings.printerHeader.trim(), w) + "\n" + center(`BUKTI TRANSAKSI ${titleStr}`, w) + "\n" + divider;
+                    t += `Tanggal : ${formatTanggal(dt.tgl)}\nJenis   : ${typeStr}\n` + divider;
+                    t += `Keterangan:\n${ket}\n\n`;
+                    t += alignLR("NOMINAL TRANSAKSI", `${signStr} Rp ${formatRibuanStr(nom)}`, w) + "\n";
+                    t += divider + center(dbSettings.printerFooter.trim(), w) + "\n\n";
 
-                if (isCetakBT) {
-                    const connected = await initBluetooth();
-                    if(connected) await printBT(st);
+                    if (checkBT) {
+                        const connected = await initBluetooth();
+                        if (connected) await printBT(tambahkanMarginKanan(t, w));
+                    }
+                    if (checkUSB) {
+                        let fFamily = dbSettings.printFontFamily; let fSize = dbSettings.printFontSize; let fWeight = dbSettings.printFontWeight;
+                        document.getElementById('print-area').innerHTML = `<div style="font-family: ${fFamily}; font-size: ${fSize}; font-weight: ${fWeight}; margin: 0; padding: 0; white-space: pre-wrap;">${tambahkanMarginKanan(t, w)}</div>`;
+                        window.print();
+                    }
                 }
+                
+                tutupModal('modal-transaksi');
+                renderLedgerPerusahaan();
+                if(document.getElementById('menu-dashboard').classList.contains('block')) renderDashboard();
 
-                if (isCetakUSB) {
-                    let fFamily = dbSettings.printFontFamily; let fSize = dbSettings.printFontSize; let fWeight = dbSettings.printFontWeight;
-                    document.getElementById('print-area').innerHTML = `<div style="font-family: ${fFamily}; font-size: ${fSize}; font-weight: ${fWeight}; margin: 0; padding: 0; white-space: pre-wrap;">${st}</div>`;
-                    window.print();
-                }
+            } catch (err) {
+                console.error(err); alert("Gagal menyimpan transaksi.");
             }
-            
-            tutupModal('modal-transaksi'); alert('Transaksi berhasil dicatat!'); fetchAllData();
         }
 
         function bukaModalCatatTabungan(idKar = null) {
-            const selectKar = document.getElementById('ct-id-karyawan');
-            selectKar.innerHTML = dbKaryawan.map(k => `<option value="${k.id}">${k.nama} (${dbDivisi.find(d => d.id == k.div_id)?.nama || '-'})</option>`).join('');
+            let elSel = document.getElementById('ct-id-karyawan');
+            elSel.innerHTML = dbKaryawan.map(k => `<option value="${k.id}">${k.nama} (${dbDivisi.find(d=>d.id==k.div_id)?.nama||'-'})</option>`).join('');
+            if(idKar) elSel.value = idKar;
             
-            if (idKar) {
-                selectKar.value = idKar;
-            }
-
-            document.getElementById('ct-tipe').value = 'keluar'; 
+            document.getElementById('ct-tipe').value = 'masuk';
             document.getElementById('ct-nominal').value = '';
             document.getElementById('ct-ket').value = '';
             
-            document.getElementById('ct-cetak-bt').checked = false;
-            document.getElementById('ct-cetak-usb').checked = false;
-            document.getElementById('ct-ukuran-print').value = dbSettings.printerSize || '80';
+            if(dbSettings.printerAutoCut !== undefined) {
+                document.getElementById('ct-cetak-bt').checked = false;
+                document.getElementById('ct-cetak-usb').checked = false;
+            }
             
             document.getElementById('modal-catat-tabungan').classList.replace('hidden', 'flex');
+            setTimeout(() => document.getElementById('ct-nominal').focus(), 100);
         }
 
         async function simpanCatatTabungan() {
-            let id_kar = parseInt(document.getElementById('ct-id-karyawan').value);
+            let idKar = parseInt(document.getElementById('ct-id-karyawan').value);
             let tipe = document.getElementById('ct-tipe').value;
-            let nominal = unformatRibuan(document.getElementById('ct-nominal').value);
+            let nom = unformatRibuan(document.getElementById('ct-nominal').value);
             let ket = document.getElementById('ct-ket').value;
             
-            const isCetakBT = document.getElementById('ct-cetak-bt').checked;
-            const isCetakUSB = document.getElementById('ct-cetak-usb').checked;
-            const w = document.getElementById('ct-ukuran-print').value === '80' ? 48 : 32;
-
-            if(!id_kar || nominal <= 0) return alert('Pilih karyawan dan masukkan nominal yang valid!');
-
-            let k = dbKaryawan.find(x => x.id === id_kar);
-            let saldoAwal = Number(k.saldo_tabungan);
-            let saldoAkhir = tipe === 'masuk' ? saldoAwal + nominal : saldoAwal - nominal;
-
-            if(saldoAkhir < 0) return alert('Penarikan gagal! Saldo tabungan tidak mencukupi.');
-
-            await _supabase.from('karyawan').update({ saldo_tabungan: saldoAkhir }).eq('id', k.id);
-            await _supabase.from('riwayat_tabungan').insert([{ id_kar: k.id, jenis: tipe, nominal: nominal, keterangan: ket || (tipe === 'masuk' ? 'Setoran Manual' : 'Tarik Manual') }]);
+            if(nom <= 0 || !ket) return alert("Lengkapi nominal & keterangan!");
             
-            if(isCetakBT || isCetakUSB) {
-                let titleStr = tipe === 'masuk' ? 'SETOR TABUNGAN' : 'TARIK TABUNGAN';
-                let st = center("SBR SYSTEMS", w) + "\n" + center(titleStr, w) + "\n" + "-".repeat(w) + "\n" + `Tgl : ${getTglWaktu()}\nNama: ${k.nama}\nKet : ${ket || '-'}\n` + "-".repeat(w) + "\n" + alignLR("Saldo Awal", formatRibuanStr(saldoAwal), w) + "\n" + alignLR(tipe === 'masuk' ? 'Setoran' : 'Penarikan', formatRibuanStr(nominal), w) + "\n" + "-".repeat(w) + "\n" + alignLR("SISA SALDO", formatRibuanStr(saldoAkhir), w) + "\n" + "-".repeat(w) + "\n" + center("Terima Kasih", w) + "\n\n";
-                
-                st = tambahkanMarginKanan(st, w);
-                
-                if(isCetakBT) {
-                    const connected = await initBluetooth();
-                    if(connected) await printBT(st);
-                }
-                if(isCetakUSB) {
-                    let fFamily = dbSettings.printFontFamily; let fSize = dbSettings.printFontSize; let fWeight = dbSettings.printFontWeight;
-                    document.getElementById('print-area').innerHTML = `<div style="font-family: ${fFamily}; font-size: ${fSize}; font-weight: ${fWeight}; margin: 0; padding: 0; white-space: pre-wrap;">${st}</div>`;
-                    window.print();
-                }
+            let kTarget = dbKaryawan.find(k => k.id === idKar);
+            if(!kTarget) return;
+
+            let oldSaldo = Number(kTarget.saldo_tabungan) || 0;
+            if(tipe === 'keluar' && nom > oldSaldo) {
+                if(!confirm(`PERINGATAN: Nominal penarikan (Rp ${formatRibuanStr(nom)}) lebih besar dari saldo tersedia (Rp ${formatRibuanStr(oldSaldo)}). Lanjutkan?`)) return;
             }
 
-            tutupModal('modal-catat-tabungan');
-            alert('Transaksi tabungan berhasil dicatat!');
-            fetchAllData();
-        }
-
-        function renderSelectDivisi() {
-            const savedFilterDivisi = document.getElementById('filter-divisi')?.value || ""; 
-            const savedRpDivisi = document.getElementById('rp-divisi')?.value || ""; 
-            const savedCgDivisi = document.getElementById('cg-divisi')?.value || ""; 
-            const savedTabDivisi = document.getElementById('filter-tab-divisi')?.value || ""; 
-            const savedRiwDivisi = document.getElementById('filter-arsip-divisi')?.value || ""; 
-            const savedHarianDivisi = document.getElementById('select-divisi-harian')?.value || ""; 
-            const savedTopDivisi = document.getElementById('top-divisi')?.value || "";
-            const savedDashProdDivisi = document.getElementById('set-dash-produksi-divisi')?.value || ""; // Filter untuk Widget Dashboard
-
-            const opts = `<option value="">-- Semua Divisi --</option>` + dbDivisi.map(d => `<option value="${d.id}">${d.nama}</option>`).join('');
+            let newSaldo = tipe === 'masuk' ? oldSaldo + nom : oldSaldo - nom;
             
-            ['select-divisi-harian', 'rp-divisi', 'cg-divisi', 'filter-divisi', 'filter-tab-divisi', 'filter-arsip-divisi', 'top-divisi', 'set-dash-produksi-divisi'].forEach(id => { if(document.getElementById(id)) document.getElementById(id).innerHTML = opts; });
+            let nowStr = new Date().toISOString(); 
+            
+            try {
+                const { error: errUpdate } = await _supabase.from('karyawan').update({ saldo_tabungan: newSaldo }).eq('id', kTarget.id);
+                if(errUpdate) throw errUpdate;
 
-            if(document.getElementById('select-divisi-harian')) document.getElementById('select-divisi-harian').value = savedHarianDivisi;
-            if(document.getElementById('rp-divisi')) document.getElementById('rp-divisi').value = savedRpDivisi;
-            if(document.getElementById('cg-divisi')) document.getElementById('cg-divisi').value = savedCgDivisi;
-            if(document.getElementById('filter-divisi')) document.getElementById('filter-divisi').value = savedFilterDivisi;
-            if(document.getElementById('filter-tab-divisi')) document.getElementById('filter-tab-divisi').value = savedTabDivisi;
-            if(document.getElementById('filter-arsip-divisi')) document.getElementById('filter-arsip-divisi').value = savedRiwDivisi;
-            if(document.getElementById('top-divisi')) document.getElementById('top-divisi').value = savedTopDivisi;
-            if(document.getElementById('set-dash-produksi-divisi')) document.getElementById('set-dash-produksi-divisi').value = savedDashProdDivisi;
+                const { error: errInsert } = await _supabase.from('riwayat_tabungan').insert([{
+                    id_kar: kTarget.id, jenis: tipe, nominal: nom, keterangan: ket, tgl: nowStr
+                }]);
+                if(errInsert) throw errInsert;
 
-            const optsAdd = dbDivisi.map(d => `<option value="${d.id}">${d.nama}</option>`).join('');
-            if(document.getElementById('form-kar-divisi')) document.getElementById('form-kar-divisi').innerHTML = optsAdd;
+                kTarget.saldo_tabungan = newSaldo;
+                dbRiwayatTabungan.push({ id_kar: kTarget.id, jenis: tipe, nominal: nom, keterangan: ket, tgl: nowStr });
+                
+                let checkBT = document.getElementById('ct-cetak-bt').checked;
+                let checkUSB = document.getElementById('ct-cetak-usb').checked;
+                
+                if (checkBT || checkUSB) {
+                    let w = document.getElementById('ct-ukuran-print').value === '80' ? 48 : 32;
+                    let titleStr = "MUTASI TABUNGAN KARYAWAN";
+                    let typeStr = tipe === 'masuk' ? "Setoran Masuk" : "Tarik Saldo Keluar";
+                    let signStr = tipe === 'masuk' ? "+" : "-";
+                    
+                    let divider = dbSettings.printerDivider ? "-".repeat(w) + "\n" : "";
+                    
+                    let t = center(dbSettings.printerHeader.trim(), w) + "\n" + center(titleStr, w) + "\n" + divider;
+                    t += `Nama    : ${kTarget.nama}\nTanggal : ${formatTanggal(getTglHariIni())}\nJenis   : ${typeStr}\n` + divider;
+                    t += `Keterangan:\n${ket}\n\n`;
+                    t += alignLR("NOMINAL TRANSAKSI", `${signStr} Rp ${formatRibuanStr(nom)}`, w) + "\n";
+                    t += divider;
+                    t += alignLR("SISA SALDO", `Rp ${formatRibuanStr(newSaldo)}`, w) + "\n";
+                    t += divider + center(dbSettings.printerFooter.trim(), w) + "\n\n";
+
+                    if (checkBT) {
+                        const connected = await initBluetooth();
+                        if (connected) await printBT(tambahkanMarginKanan(t, w));
+                    }
+                    if (checkUSB) {
+                        let fFamily = dbSettings.printFontFamily; let fSize = dbSettings.printFontSize; let fWeight = dbSettings.printFontWeight;
+                        document.getElementById('print-area').innerHTML = `<div style="font-family: ${fFamily}; font-size: ${fSize}; font-weight: ${fWeight}; margin: 0; padding: 0; white-space: pre-wrap;">${tambahkanMarginKanan(t, w)}</div>`;
+                        window.print();
+                    }
+                }
+                
+                tutupModal('modal-catat-tabungan');
+                renderTabBukuSaldo();
+
+            } catch (err) {
+                console.error(err); alert("Gagal mencatat mutasi tabungan.");
+            }
         }
 
         function bukaTabPengaturan(id) { 
-            document.querySelectorAll('.tab-content').forEach(el=>el.classList.add('hidden')); 
-            document.getElementById(id).classList.remove('hidden'); 
-            
+            document.querySelectorAll('.tab-content').forEach(el=>el.classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); 
             const aktifCls = "flex-1 min-w-[130px] py-3 px-4 rounded-xl font-bold text-sm bg-white shadow-sm text-blue-600 transition-all";
             const pasifCls = "flex-1 min-w-[130px] py-3 px-4 rounded-xl font-bold text-sm text-gray-500 hover:bg-white/50 transition-all";
+            ['tab-karyawan', 'tab-divisi', 'tab-potongan', 'tab-dashboard', 'tab-printer'].forEach(tId => {
+                document.getElementById('btn-'+tId).className = id===tId ? aktifCls : pasifCls;
+            });
+            if(id === 'tab-dashboard') renderPengaturanDashboard();
+        }
+
+        function renderSelectDivisi() {
+            let opts = `<option value="">-- Semua Divisi --</option>` + dbDivisi.map(d => `<option value="${d.id}">${d.nama}</option>`).join('');
+            let optsNoAll = dbDivisi.map(d => `<option value="${d.id}">${d.nama}</option>`).join('');
             
-            document.getElementById('btn-tab-potongan').className = id==='tab-potongan'?aktifCls:pasifCls;
-            document.getElementById('btn-tab-divisi').className = id==='tab-divisi'?aktifCls:pasifCls;
-            document.getElementById('btn-tab-karyawan').className = id==='tab-karyawan'?aktifCls:pasifCls;
-            document.getElementById('btn-tab-printer').className = id==='tab-printer'?aktifCls:pasifCls;
-            document.getElementById('btn-tab-dashboard').className = id==='tab-dashboard'?aktifCls:pasifCls;
-
-            if (id === 'tab-dashboard') renderPengaturanDashboard();
-            if (id === 'tab-karyawan') renderTableKaryawan();
+            if(document.getElementById('filter-divisi')) document.getElementById('filter-divisi').innerHTML = opts;
+            if(document.getElementById('form-kar-divisi')) document.getElementById('form-kar-divisi').innerHTML = optsNoAll;
+            if(document.getElementById('select-divisi-harian')) document.getElementById('select-divisi-harian').innerHTML = `<option value="">Pilih Divisi...</option>` + optsNoAll;
+            if(document.getElementById('cg-divisi')) document.getElementById('cg-divisi').innerHTML = `<option value="">Pilih Divisi...</option>` + optsNoAll;
+            if(document.getElementById('rp-divisi')) document.getElementById('rp-divisi').innerHTML = `<option value="">Pilih Divisi...</option>` + optsNoAll;
+            if(document.getElementById('filter-tab-divisi')) document.getElementById('filter-tab-divisi').innerHTML = opts;
+            if(document.getElementById('filter-arsip-divisi')) document.getElementById('filter-arsip-divisi').innerHTML = opts;
+            
+            // Dashboard
+            if(document.getElementById('top-divisi')) document.getElementById('top-divisi').innerHTML = opts;
+            if(document.getElementById('set-dash-produksi-divisi')) document.getElementById('set-dash-produksi-divisi').innerHTML = opts;
         }
 
-        async function simpanPengaturan() { 
-            dbSettings.tarifKas = unformatRibuan(document.getElementById('set-kas').value); 
-            dbSettings.tarifListrik = unformatRibuan(document.getElementById('set-listrik').value); 
-
-            await _supabase.from('settings').update({ tarif_kas: dbSettings.tarifKas, tarif_listrik: dbSettings.tarifListrik }).eq('id', 1); 
-            alert('Setelan umum tersimpan!'); 
+        function renderTableDivisi() {
+            if(dbDivisi.length === 0) {
+                document.getElementById('tbody-divisi').innerHTML = `<tr><td colspan="2" class="py-10 text-center text-gray-400">Belum ada divisi.</td></tr>`;
+            } else {
+                document.getElementById('tbody-divisi').innerHTML = dbDivisi.map(d => `<tr><td class="font-bold">${d.nama}</td><td class="text-center"><button onclick="editDivisi(${d.id})" class="text-blue-500 bg-blue-50 p-2 rounded-lg hover:bg-blue-100 mr-2">✏️</button><button onclick="hapusDivisi(${d.id})" class="text-red-500 bg-red-50 p-2 rounded-lg hover:bg-red-100">🗑️</button></td></tr>`).join('');
+            }
         }
 
-        async function simpanPengaturanPrinter() {
-            dbSettings.printerHeader = document.getElementById('set-print-header').value || "SBR SYSTEMS PAYROLL";
-            dbSettings.printerFooter = document.getElementById('set-print-footer').value || "* Terima Kasih *";
+        function renderTableKaryawan() {
+            let filterDiv = document.getElementById('filter-divisi').value; let filterNama = document.getElementById('filter-nama').value.toLowerCase();
+            let filtered = dbKaryawan.filter(k => (filterDiv === "" || k.div_id == filterDiv) && k.nama.toLowerCase().includes(filterNama));
+            if(filtered.length === 0) {
+                document.getElementById('tbody-karyawan').innerHTML = `<tr><td colspan="5" class="py-10 text-center text-gray-400">Tidak ada data karyawan.</td></tr>`;
+            } else {
+                document.getElementById('tbody-karyawan').innerHTML = filtered.map(k => `<tr><td class="font-bold">${k.nama}</td><td class="text-gray-500 text-sm font-medium">${dbDivisi.find(d=>d.id==k.div_id)?.nama || '-'}</td><td class="text-right">Rp ${formatRibuanStr(k.tarifReg)}</td><td class="text-right">Rp ${formatRibuanStr(k.tarifLem)}</td><td class="text-center"><button onclick="editKaryawan(${k.id})" class="text-blue-500 bg-blue-50 p-2 rounded-lg hover:bg-blue-100 mr-2">✏️</button><button onclick="hapusKaryawan(${k.id})" class="text-red-500 bg-red-50 p-2 rounded-lg hover:bg-red-100">🗑️</button></td></tr>`).join('');
+            }
+        }
+
+        function bukaModalDivisi() { document.getElementById('form-div-id').value = ""; document.getElementById('form-div-nama').value = ""; document.getElementById('modal-divisi').classList.replace('hidden', 'flex'); setTimeout(() => document.getElementById('form-div-nama').focus(), 100); }
+        function editDivisi(id) { let d = dbDivisi.find(x => x.id === id); document.getElementById('form-div-id').value = id; document.getElementById('form-div-nama').value = d.nama; document.getElementById('modal-divisi').classList.replace('hidden', 'flex'); }
+        async function simpanDivisi() {
+            let id = document.getElementById('form-div-id').value; let nama = document.getElementById('form-div-nama').value; if(!nama) return alert('Nama Divisi wajib diisi');
+            if(id) { await _supabase.from('divisi').update({nama}).eq('id', id); let i = dbDivisi.findIndex(x=>x.id==id); dbDivisi[i].nama = nama; } 
+            else { const { data } = await _supabase.from('divisi').insert([{nama}]).select(); if(data) dbDivisi.push(data[0]); }
+            renderSelectDivisi(); renderTableDivisi(); tutupModal('modal-divisi');
+        }
+        async function hapusDivisi(id) { if(!confirm('Yakin hapus divisi ini?')) return; await _supabase.from('divisi').delete().eq('id', id); dbDivisi = dbDivisi.filter(x => x.id !== id); renderSelectDivisi(); renderTableDivisi(); }
+
+        function bukaModalKaryawan() { 
+            document.getElementById('modal-karyawan-title').innerText = "Tambah Karyawan Baru";
+            document.getElementById('form-kar-id').value = ""; document.getElementById('form-kar-nama').value = "";
+            document.getElementById('form-kar-reg').value = ""; document.getElementById('form-kar-lem').value = "";
+            document.getElementById('form-kar-lem2').value = ""; document.getElementById('form-kar-lem3').value = "";
+            document.getElementById('form-kar-potkas').checked = false; document.getElementById('form-kar-potlistrik').checked = false;
+            document.getElementById('modal-karyawan').classList.replace('hidden', 'flex'); setTimeout(() => document.getElementById('form-kar-nama').focus(), 100);
+        }
+        function editKaryawan(id) {
+            let k = dbKaryawan.find(x => x.id === id); document.getElementById('modal-karyawan-title').innerText = "Edit Karyawan";
+            document.getElementById('form-kar-id').value = id; document.getElementById('form-kar-nama').value = k.nama;
+            document.getElementById('form-kar-divisi').value = k.div_id;
+            document.getElementById('form-kar-reg').value = formatRibuanStr(k.tarifReg); document.getElementById('form-kar-lem').value = formatRibuanStr(k.tarifLem);
+            document.getElementById('form-kar-lem2').value = formatRibuanStr(k.tarifLem2 || 0); document.getElementById('form-kar-lem3').value = formatRibuanStr(k.tarifLem3 || 0);
+            document.getElementById('form-kar-potkas').checked = k.potKas; document.getElementById('form-kar-potlistrik').checked = k.potListrik;
+            document.getElementById('modal-karyawan').classList.replace('hidden', 'flex');
+        }
+        async function simpanKaryawan() {
+            let id = document.getElementById('form-kar-id').value; let nama = document.getElementById('form-kar-nama').value; let div_id = document.getElementById('form-kar-divisi').value;
+            let tarifReg = unformatRibuan(document.getElementById('form-kar-reg').value); let tarifLem = unformatRibuan(document.getElementById('form-kar-lem').value);
+            let tarifLem2 = unformatRibuan(document.getElementById('form-kar-lem2').value); let tarifLem3 = unformatRibuan(document.getElementById('form-kar-lem3').value);
+            let potKas = document.getElementById('form-kar-potkas').checked; let potListrik = document.getElementById('form-kar-potlistrik').checked;
+            
+            if(!nama || !div_id) return alert('Nama dan Divisi wajib diisi');
+            let dataObj = { nama, div_id, tarif_reg: tarifReg, tarif_lem: tarifLem, tarif_lem_2: tarifLem2, tarif_lem_3: tarifLem3, pot_kas: potKas, pot_listrik: potListrik };
+            
+            if(id) { 
+                await _supabase.from('karyawan').update(dataObj).eq('id', id); 
+                let idx = dbKaryawan.findIndex(x=>x.id==id); 
+                dbKaryawan[idx] = { ...dbKaryawan[idx], nama, div_id, tarifReg, tarifLem, tarifLem2, tarifLem3, potKas, potListrik }; 
+            } else { 
+                const { data } = await _supabase.from('karyawan').insert([dataObj]).select(); 
+                if(data) dbKaryawan.push({ id: data[0].id, nama, div_id, tarifReg, tarifLem, tarifLem2, tarifLem3, potKas, potListrik, saldo_tabungan: 0 }); 
+            }
+            dbKaryawan.sort((a, b) => a.nama.localeCompare(b.nama));
+            renderTableKaryawan(); tutupModal('modal-karyawan');
+            if(document.getElementById('menu-dashboard').classList.contains('block')) renderDashboard();
+        }
+        async function hapusKaryawan(id) { if(!confirm('Yakin hapus karyawan ini?')) return; await _supabase.from('karyawan').delete().eq('id', id); dbKaryawan = dbKaryawan.filter(x => x.id !== id); renderTableKaryawan(); if(document.getElementById('menu-dashboard').classList.contains('block')) renderDashboard(); }
+
+        async function simpanPengaturan() {
+            let kas = unformatRibuan(document.getElementById('set-kas').value); let listrik = unformatRibuan(document.getElementById('set-listrik').value);
+            await _supabase.from('settings').update({ tarif_kas: kas, tarif_listrik: listrik }).eq('id', 1);
+            dbSettings.tarifKas = kas; dbSettings.tarifListrik = listrik; alert('Pengaturan Nominal Potongan berhasil disimpan!');
+        }
+
+        function simpanPengaturanPrinter() {
+            dbSettings.printerHeader = document.getElementById('set-print-header').value;
+            dbSettings.printerFooter = document.getElementById('set-print-footer').value;
             dbSettings.printerSize = document.getElementById('set-print-size').value;
             dbSettings.printerDivider = document.getElementById('set-print-divider').checked;
             dbSettings.printerAutoCut = document.getElementById('set-print-autocut').checked;
@@ -2754,166 +3015,17 @@
             dbSettings.printFontFamily = document.getElementById('set-print-font-family').value;
             dbSettings.printFontSize = document.getElementById('set-print-font-size').value;
             dbSettings.printFontWeight = document.getElementById('set-print-font-weight').value;
-
+            
             document.getElementById('preview-ukuran').value = dbSettings.printerSize;
             document.getElementById('arsip-ukuran').value = dbSettings.printerSize;
-
-            localStorage.setItem('sbr_printer_settings', JSON.stringify({
-                printerHeader: dbSettings.printerHeader,
-                printerFooter: dbSettings.printerFooter,
-                printerSize: dbSettings.printerSize,
-                printerDivider: dbSettings.printerDivider,
-                printerAutoCut: dbSettings.printerAutoCut,
-                printFontFamily: dbSettings.printFontFamily,
-                printFontSize: dbSettings.printFontSize,
-                printFontWeight: dbSettings.printFontWeight
-            }));
-
-            let { error } = await _supabase.from('settings').update({ 
-                printer_header: dbSettings.printerHeader, 
-                printer_footer: dbSettings.printerFooter,
-                printer_size: dbSettings.printerSize,
-                printer_divider: dbSettings.printerDivider,
-                print_font_family: dbSettings.printFontFamily,
-                print_font_size: dbSettings.printFontSize,
-                print_font_weight: dbSettings.printFontWeight
-            }).eq('id', 1);
-
-            if(error) console.warn("Supabase update info: ", error);
-            alert('Konfigurasi printer, auto-cut, & font berhasil disimpan!');
-        }
-
-        function renderTableDivisi() { document.getElementById('tbody-divisi').innerHTML = dbDivisi.map(d => `<tr><td class="font-bold">${d.nama}</td><td class="text-center"><button onclick="bukaModalDivisi(${d.id})" class="text-blue-500 font-bold text-xs mr-2">Edit</button><button onclick="hapusDivisi(${d.id})" class="text-red-500 font-bold text-xs">Hapus</button></td></tr>`).join(''); }
-        function bukaModalDivisi(id = null) { document.getElementById('modal-divisi').classList.replace('hidden','flex'); if(id){ const d = dbDivisi.find(x=>x.id===id); document.getElementById('form-div-id').value = d.id; document.getElementById('form-div-nama').value = d.nama; } else { document.getElementById('form-div-id').value=''; document.getElementById('form-div-nama').value=''; } }
-        
-        async function simpanDivisi() { 
-            const id = document.getElementById('form-div-id').value; 
-            const nama = document.getElementById('form-div-nama').value; 
-            if(!nama) return; 
+            if(document.getElementById('trans-ukuran-print')) document.getElementById('trans-ukuran-print').value = dbSettings.printerSize;
+            if(document.getElementById('ct-ukuran-print')) document.getElementById('ct-ukuran-print').value = dbSettings.printerSize;
             
-            tutupModal('modal-divisi');
-            
-            if(id) {
-                let idx = dbDivisi.findIndex(x => x.id == id);
-                if(idx !== -1) dbDivisi[idx].nama = nama;
-                renderTableDivisi();
-                await _supabase.from('divisi').update({ nama }).eq('id', id);
-            } else { 
-                let { data, error } = await _supabase.from('divisi').insert([{ nama }]).select(); 
-                if(error) {
-                    alert("Gagal tambah divisi: " + error.message);
-                } else if(data && data.length > 0) {
-                    dbDivisi.push(data[0]);
-                    renderTableDivisi();
-                }
-            } 
-            fetchAllData(); 
+            localStorage.setItem('sbr_printer_settings', JSON.stringify(dbSettings));
+            alert('Pengaturan gaya & konfigurasi printer tersimpan secara lokal!');
         }
 
-        async function hapusDivisi(id) { if(confirm('Hapus divisi ini?')) { await _supabase.from('divisi').delete().eq('id', id); fetchAllData(); } }
-
-        function renderTableKaryawan() {
-            const elNama = document.getElementById('filter-nama'); const elDiv = document.getElementById('filter-divisi');
-            const key = elNama ? elNama.value.toLowerCase() : ''; const div = elDiv ? elDiv.value : '';
-            const tbody = document.getElementById('tbody-karyawan');
-            let filtered = dbKaryawan;
-            if(div !== "") filtered = filtered.filter(k => k.div_id == div);
-            if(key !== "") filtered = filtered.filter(k => k.nama.toLowerCase().includes(key));
-
-            if(filtered.length === 0) return tbody.innerHTML = `<tr><td colspan="5" class="py-10 text-center text-gray-400">Tidak ada data karyawan ditemukan.</td></tr>`;
-
-            tbody.innerHTML = filtered.map(k => `<tr>
-                    <td class="font-bold">${k.nama}</td>
-                    <td class="text-gray-500">${dbDivisi.find(d=>d.id==k.div_id)?.nama || '<span class="text-amber-500 italic">Belum diset</span>'}</td>
-                    <td class="text-right font-medium">${formatRibuanStr(k.tarifReg)}</td>
-                    <td class="text-right font-medium">${formatRibuanStr(k.tarifLem)}</td>
-                    <td class="text-center">
-                        <button onclick="bukaModalKaryawan(${k.id})" class="bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300 px-3 py-1 rounded-lg text-xs font-bold mr-1 hover:bg-blue-200">Edit</button>
-                        <button onclick="hapusKaryawan(${k.id})" class="bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300 px-3 py-1 rounded-lg text-xs font-bold hover:bg-red-200">Hapus</button>
-                    </td>
-                </tr>`).join('');
-        }
-
-        async function hapusKaryawan(id) { if(confirm("Hapus karyawan ini beserta riwayat produksinya?")) { await _supabase.from('produksi').delete().eq('id_kar', id); await _supabase.from('karyawan').delete().eq('id', id); fetchAllData(); } }
-
-        function bukaModalKaryawan(id=null) { 
-            document.getElementById('modal-karyawan').classList.replace('hidden','flex'); 
-            if(id){ 
-                const k = dbKaryawan.find(x=>x.id===id); 
-                document.getElementById('form-kar-id').value = k.id; 
-                document.getElementById('form-kar-nama').value = k.nama; 
-                document.getElementById('form-kar-divisi').value = k.div_id || ""; 
-                document.getElementById('form-kar-reg').value = formatRibuanStr(k.tarifReg); 
-                document.getElementById('form-kar-lem').value = formatRibuanStr(k.tarifLem); 
-                document.getElementById('form-kar-lem2').value = formatRibuanStr(k.tarifLem2); 
-                document.getElementById('form-kar-lem3').value = formatRibuanStr(k.tarifLem3); 
-                document.getElementById('form-kar-potkas').checked = k.potKas; 
-                document.getElementById('form-kar-potlistrik').checked = k.potListrik; 
-            } else { 
-                document.getElementById('form-kar-id').value = ''; 
-                document.getElementById('form-kar-nama').value = ''; 
-                document.getElementById('form-kar-divisi').value = ''; 
-                document.getElementById('form-kar-reg').value = ''; 
-                document.getElementById('form-kar-lem').value = ''; 
-                document.getElementById('form-kar-lem2').value = ''; 
-                document.getElementById('form-kar-lem3').value = ''; 
-                document.getElementById('form-kar-potkas').checked = false; 
-                document.getElementById('form-kar-potlistrik').checked = false; 
-            } 
-        }
-
-        async function simpanKaryawan() { 
-            const id = document.getElementById('form-kar-id').value; 
-            const divVal = document.getElementById('form-kar-divisi').value;
-            const py = { 
-                nama: document.getElementById('form-kar-nama').value, 
-                div_id: divVal ? parseInt(divVal) : null, 
-                tarif_reg: unformatRibuan(document.getElementById('form-kar-reg').value), 
-                tarif_lem: unformatRibuan(document.getElementById('form-kar-lem').value), 
-                tarif_lem_2: unformatRibuan(document.getElementById('form-kar-lem2').value), 
-                tarif_lem_3: unformatRibuan(document.getElementById('form-kar-lem3').value), 
-                pot_kas: document.getElementById('form-kar-potkas').checked, 
-                pot_listrik: document.getElementById('form-kar-potlistrik').checked 
-            }; 
-            
-            if(!py.nama) return alert('Nama karyawan wajib diisi!'); 
-            tutupModal('modal-karyawan'); 
-
-            if(id){ 
-                let idx = dbKaryawan.findIndex(x => x.id == id);
-                if(idx !== -1) {
-                    dbKaryawan[idx] = { 
-                        ...dbKaryawan[idx], 
-                        nama: py.nama, div_id: py.div_id, tarifReg: py.tarif_reg, tarifLem: py.tarif_lem, 
-                        tarifLem2: py.tarif_lem_2, tarifLem3: py.tarif_lem_3, 
-                        potKas: py.pot_kas, potListrik: py.pot_listrik 
-                    };
-                }
-                dbKaryawan.sort((a, b) => a.nama.localeCompare(b.nama)); 
-                renderTableKaryawan(); 
-                let { error } = await _supabase.from('karyawan').update(py).eq('id', id); 
-                if(error) alert("Gagal update ke database: " + error.message);
-            } else { 
-                let newObjForDb = { ...py, saldo_tabungan: 0 };
-                let { data, error } = await _supabase.from('karyawan').insert([newObjForDb]).select(); 
-                
-                if(error) {
-                    alert("Gagal tambah ke database: " + error.message);
-                } else if (data && data.length > 0) {
-                    let kBaru = data[0];
-                    dbKaryawan.push({ 
-                        id: kBaru.id, div_id: kBaru.div_id, nama: kBaru.nama, 
-                        tarifReg: kBaru.tarif_reg, tarifLem: kBaru.tarif_lem, 
-                        tarifLem2: kBaru.tarif_lem_2 || 0, tarifLem3: kBaru.tarif_lem_3 || 0, 
-                        potKas: kBaru.pot_kas, potListrik: kBaru.pot_listrik, saldo_tabungan: 0 
-                    });
-                    dbKaryawan.sort((a, b) => a.nama.localeCompare(b.nama)); 
-                    renderTableKaryawan();
-                }
-            } 
-        }
-
-        initApp();
+        window.onload = initApp;
     </script>
 </body>
 </html>
